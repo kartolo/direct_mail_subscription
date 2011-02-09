@@ -1099,6 +1099,19 @@ class user_feAdmin	{
 
 		$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="FE['.$this->theTable.'][uid]" value="'.$currentArr['uid'].'" />';
 		if ($this->conf['edit.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
+		
+		/* CAPTCHA */
+		if (t3lib_extMgm::isLoaded('captcha')){
+			if (!$this->markerArray['###CAPTCHA###']) {
+				$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+				$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+				$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
+				$markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
+			}
+		} else {
+			$markerArray['###CAPTCHA###'] = '';
+		}
+			
 		$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
 		$content.=$this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($currentArr), $this->theTable.'_form',  'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 

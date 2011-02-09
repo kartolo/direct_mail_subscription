@@ -1,0 +1,11 @@
+2011-02-09 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* added captcha in subscription and edit form
+	* added the ability to search for user recursively
+	* if no subscription's not found, no mail will be sent.
+
+2011-02-01 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* add salutation field in tt_address. This will be taken from locallang
+	* input and output values will be sanitized
+	* remove unused dk template
+	* fe_adminLib is copied, so it's dependant from core
+	* fixed old bug #4776: categories are not updated.
