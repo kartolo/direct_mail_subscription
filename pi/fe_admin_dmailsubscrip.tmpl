@@ -71,10 +71,10 @@
 
 <BR>
 <b>HTML emails?</b><BR>
-<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1>
+<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1 />
 <BR>
-
-
+###CAPTCHA###
+<br />
 
 <input type="submit" name="whatever" value="Subscribe">
 <input type="submit" name="whatever" value="Cancel" onClick="document.forms[0].action='###BACK_URL###';">
@@ -88,6 +88,18 @@ Are you subscribed already and wishes to <a href="###FORM_URL###&cmd=infomail&ba
 
 
 
+<!-- ###TEMPLATE_CAPTCHA### begin -->
+###CAPTCHA_IMG###
+<br />
+<!--###SUB_REQUIRED_FIELD_captcha### begin
+	Same as above...
+	EVAL_ERROR_FIELD_email is in addition an error message defined in TypoScript in case an email address does not verify to be of correct syntax.
+-->
+	<font color=red><strong>You must fill in this field!</strong></font><BR>
+	###EVAL_ERROR_FIELD_captcha###<BR>
+<!--###SUB_REQUIRED_FIELD_captcha### end-->
+<input type="text" size=30 name="FE[tt_address][captcha]" value="" />
+<!-- ###TEMPLATE_CAPTCHA### begin -->
 
 
 
@@ -371,6 +383,23 @@ Enter the email address <em>by which you're registered</em> here, and a link to 
 <!-- ###TEMPLATE_INFOMAIL_SENT### end-->
 
 
+
+<BR><BR><BR><BR><HR><BR><BR><BR>
+<em>		This template is the response page when no email is found.</em>
+<br>
+<br>
+
+<!-- ###TEMPLATE_INFOMAIL_NORECORD### begin
+	This template is the response page when no email is found.
+-->
+###GW1B###The email is not registered.###GW1E###<br>
+<br>
+###GW2B###
+
+<a href="###BACK_URL###"><strong>Go back to register.</strong></a><BR>
+###GW2E###
+
+<!-- ###TEMPLATE_INFOMAIL_NORECORD### end-->
 
 
 

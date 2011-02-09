@@ -326,7 +326,7 @@ class user_feAdmin	{
 		} else {
 				// Finally, if there has been no attempt to save. That is either preview or just displaying and empty or not correctly filled form:
 			if (!$this->cmd)	{
-				$this->cmd=$this->conf['defaultCmd'];
+				$this->cmd = $this->conf['defaultCmd'];
 			}
 			if ($this->conf['debug'])		debug('Display form: '.$this->cmd,1);
 			switch($this->cmd)	{
@@ -729,6 +729,27 @@ class user_feAdmin	{
 				}
 				$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
 			}
+			
+			/* CAPTCHA */
+			if (t3lib_extMgm::isLoaded('captcha')){
+				session_start();
+				$captchaStr = $_SESSION['tx_captcha_string'];
+				$_SESSION['tx_captcha_string'] = '';
+				
+				if ($captchaStr && $this->dataArr['captcha'] !== $captchaStr) { 
+					$theField = 'captcha';
+					$tempArr[] = $theField;
+					$this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
+					$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
+					
+					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+					$this->markerArray['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+					$this->markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $this->markerArray);
+					
+				}
+			} 
+			
+			
 		}
 		$this->failure=implode(',',$tempArr);	 //$failure will show which fields were not OK
 	}
@@ -987,8 +1008,20 @@ class user_feAdmin	{
 
 			$markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $this->dataArr, '', TRUE, 'FIELD_', $this->recInMarkersHSC);
 			if ($this->conf['create.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
+			
+			/* CAPTCHA */
+			if (t3lib_extMgm::isLoaded('captcha')){
+				if (!$this->markerArray['###CAPTCHA###']) {
+					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+					$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+					$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
+					$markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
+				}
+			} else {
+				$markerArray['###CAPTCHA###'] = '';
+			}
 			$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
-			$content.=$this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($this->dataArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
+			$content.= $this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($this->dataArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 		}
 		return $content;
 	}
@@ -1343,23 +1376,28 @@ class user_feAdmin	{
 				if (!$config['dontLockPid'])	{
 					$pidLock='AND pid IN ('.$this->thePid.') ';
 				}
-
+				
+				//get PID recursively
+				if ($this->conf["pidRecursive"]) {
+					$pidLock = "AND pid IN (".tslib_cObj::getTreeList($this->thePid,100).$this->thePid.")";
+				}
+				
 					// Getting records
 				if (t3lib_div::testInt($fetch))	{
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,'uid',$fetch,$pidLock,'','','1');
 				} elseif ($fetch) {	// $this->conf['email.']['field'] must be a valid field in the table!
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,$this->conf['email.']['field'],$fetch,$pidLock,'','','100');
 				}
-
+				
 					// Processing records
 				if (is_array($DBrows))	{
 					$recipient = $DBrows[0][$this->conf['email.']['field']];
 					$this->compileMail($config['label'], $DBrows, $recipient, $this->conf['setfixed.']);
-				} elseif ($this->cObj->checkEmail($fetch)) {
-					$this->sendMail($fetch, '', trim($this->cObj->getSubpart($this->templateCode, '###'.$this->emailMarkPrefix.'NORECORD###')));
+					$content = $this->getPlainTemplate('###TEMPLATE_INFOMAIL_SENT###');
+				} else {
+					$content = $this->getPlainTemplate('###TEMPLATE_INFOMAIL_NORECORD###');
 				}
 
-				$content = $this->getPlainTemplate('###TEMPLATE_INFOMAIL_SENT###');
 			} else {
 				$content = $this->getPlainTemplate('###TEMPLATE_INFOMAIL###');
 			}

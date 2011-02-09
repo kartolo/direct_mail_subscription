@@ -62,8 +62,8 @@ plugin.feadmin.dmailsubscription {
 	create {
 		userFunc_afterSave = user_dmailsubscribe->saveRecord
 		preview = 0
-		fields = name, hidden, email, module_sys_dmail_category, module_sys_dmail_html
-		required = name, email
+		fields = name, hidden, email, module_sys_dmail_category, module_sys_dmail_html, captcha
+		required = name, email, captcha
 		noSpecialLoginForm = 1
 		# Initially hide the user until he approves!
 		overrideValues.hidden = 1
@@ -76,10 +76,14 @@ plugin.feadmin.dmailsubscription {
 
 	evalErrors.email.uniqueLocal = Apparently you're already registered with this email address!
 	evalErrors.email.email = This is not a proper email address!
+	evalErrors.captcha.captcha = Captcha code is not right.
 
 	parseValues.module_sys_dmail_category = checkArray,setEmptyIfAbsent 
 	parseValues.module_sys_dmail_html = setEmptyIfAbsent 
+	
 	pid = {$plugin.feadmin.dmailsubscription.pid}
+	//always search recursively
+	pidRecursive = 1
 
 	email.from = {$plugin.feadmin.dmailsubscription.email}
 	email.fromName = {$plugin.feadmin.dmailsubscription.emailName}
