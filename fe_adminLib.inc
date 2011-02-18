@@ -740,11 +740,13 @@ class user_feAdmin	{
 					$theField = 'captcha';
 					$tempArr[] = $theField;
 					$this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
-					$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
+//					$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
 					
-					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
-					$this->markerArray['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
-					$this->markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $this->markerArray);
+//					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+//					$this->markerArray['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+//					$this->markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $this->markerArray);
+					$errorMsg = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
+					$this->markerArray['###CAPTCHA###'] = $this->getCaptcha($errorMsg);
 					
 				}
 			} 
@@ -1010,16 +1012,10 @@ class user_feAdmin	{
 			if ($this->conf['create.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
 			
 			/* CAPTCHA */
-			if (t3lib_extMgm::isLoaded('captcha')){
-				if (!$this->markerArray['###CAPTCHA###']) {
-					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
-					$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
-					$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
-					$markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
-				}
-			} else {
-				$markerArray['###CAPTCHA###'] = '';
+			if (!$this->markerArray['###CAPTCHA###']) {
+				$markerArray['###CAPTCHA###'] = $this->getCaptcha();
 			}
+			
 			$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
 			$content.= $this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($this->dataArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 		}
@@ -1101,15 +1097,8 @@ class user_feAdmin	{
 		if ($this->conf['edit.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
 		
 		/* CAPTCHA */
-		if (t3lib_extMgm::isLoaded('captcha')){
-			if (!$this->markerArray['###CAPTCHA###']) {
-				$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
-				$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
-				$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
-				$markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
-			}
-		} else {
-			$markerArray['###CAPTCHA###'] = '';
+		if (!$this->markerArray['###CAPTCHA###']) {
+			$markerArray['###CAPTCHA###'] = $this->getCaptcha();
 		}
 			
 		$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
@@ -1233,10 +1222,13 @@ class user_feAdmin	{
 		if ($this->conf['debug'])	debug('getPlainTemplate(): '.$key,1);
 		$templateCode = $this->cObj->getSubpart($this->templateCode, $key);
 		$this->setCObjects($templateCode,is_array($r)?$r:array());
-		return  $this->cObj->substituteMarkerArray(
-				$templateCode,
-				is_array($r) ? $this->cObj->fillInMarkerArray($this->markerArray, $r, '', TRUE, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray
-			);
+		
+		$markerArray = is_array($r) ? $this->cObj->fillInMarkerArray($this->markerArray, $r, '', TRUE, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray;
+		
+		
+		
+		$content = $this->cObj->substituteMarkerArray( $templateCode, $markerArray);
+		return $content;
 	}
 
 	/**
@@ -1344,7 +1336,30 @@ class user_feAdmin	{
 		return $markerArray;
 	}
 
-
+	/**
+	 * return the captcha code. Uses the TEMPLATE_CAPTCHA subpart to
+	 * 
+	 * @param	string	$errorMsg: the captcha error message
+	 * @return	html	$captcha: the captcha code;
+	 */
+	function getCaptcha($errorMsg='') {
+		if (t3lib_extMgm::isLoaded('captcha')){
+			$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+			$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+			
+			if (!empty($errorMsg)) {
+			$markerArrayCaptcha['###EVAL_ERROR_FIELD_captcha###'] = $errorMsg;
+			} else {
+				$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
+			}
+			
+			$captcha = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
+		} else {
+			$captcha = '';
+		}
+		
+		return $captcha;
+	}
 
 
 
@@ -1457,6 +1472,7 @@ class user_feAdmin	{
 
 		$GLOBALS['TT']->setTSlogMessage('Template key: ###'.$key.'###, userContentLength: '.strlen($userContent['final']).', adminContentLength: '.strlen($adminContent['final']));
 
+		//TODO: add optional Swiftmailer see #13129
 		$this->sendMail($recipient, $this->conf['email.']['admin'], $userContent['final'], $adminContent['final']);
 		$GLOBALS['TT']->pull();
 	}

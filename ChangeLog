@@ -1,3 +1,6 @@
+2011-02-18 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* code clean up captcha and html template
+	
 2011-02-09 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* added captcha in subscription and edit form
 	* added the ability to search for user recursively

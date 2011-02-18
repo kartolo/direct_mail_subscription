@@ -9,9 +9,9 @@
 
 
 
-<br>
-<br>
-<br>
+<br />
+<br />
+<br />
 <H1>DIRECT MAIL SUBSCRIPTION/ADMINISTRATION TEMPLATES</H1>
 <h2>EXAMPLE</h2>
 
@@ -27,62 +27,62 @@
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>	Form for creation of a new newsletter recipient:</em>
-<br>
-<br>
+<br />
+<br />
 
 
 
 <!-- ###TEMPLATE_CREATE### begin
 	Form for creation of a new newsletter recipient
 -->
-<FORM name="tt_address_form" method="post" action="###FORM_URL###">
-###GW1B###Subscribe to our newletter###GW1E###<br>
-<br>
+<form name="tt_address_form" method="post" action="###FORM_URL###">
+###GW1B###Subscribe to our newletter###GW1E###<br />
+<br />
 ###GW2B###
 
 
-<b>Your name:</b><BR>
+<b>Your name:</b><br />
 <!--###SUB_REQUIRED_FIELD_name### begin
 	This is shown only if the form is submitted and the field is configured to be "required" and at the same time not filled in.
 	The syntax is of the comment 'name' is: 	SUB_REQUIRED_FIELD_[enter-the-field-name-here]
 -->
-	<font color=red><strong>You must fill in this field!</strong></font><BR>
+	<font color=red><strong>You must fill in this field!</strong></font><br />
 <!--###SUB_REQUIRED_FIELD_name### end -->
-<input type="text" name="FE[tt_address][name]">
-<BR>
+<input type="text" name="FE[tt_address][name]" />
+<br />
 
 
 
-<br>
-<b>Email:</b><BR>
+<br />
+<b>Email:</b><br />
 <!--###SUB_REQUIRED_FIELD_email### begin
 	Same as above...
 	EVAL_ERROR_FIELD_email is in addition an error message defined in TypoScript in case an email address does not verify to be of correct syntax.
 -->
-	<font color=red><strong>You must fill in this field!</strong></font><BR>
-	###EVAL_ERROR_FIELD_email###<BR>
+	<font color=red><strong>You must fill in this field!</strong></font><br />
+	###EVAL_ERROR_FIELD_email###<br />
 <!--###SUB_REQUIRED_FIELD_email### end-->
-<input type="text" name="FE[tt_address][email]">
-<BR>
+<input type="text" name="FE[tt_address][email]" />
+<br />
 
 ###CE_CATLIST###
 
-<BR>
-<b>HTML emails?</b><BR>
+<br />
+<b>HTML emails?</b><br />
 <input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1 />
-<BR>
+<br />
 ###CAPTCHA###
 <br />
 
-<input type="submit" name="whatever" value="Subscribe">
-<input type="submit" name="whatever" value="Cancel" onClick="document.forms[0].action='###BACK_URL###';">
+<input type="submit" name="whatever" value="Subscribe" />
+<input type="submit" name="whatever" value="Cancel" onClick="document.forms[0].action='###BACK_URL###';" />
 ###HIDDENFIELDS###
-</FORM>
-<BR>
-Are you subscribed already and wishes to <a href="###FORM_URL###&cmd=infomail&backURL=###FORM_URL_ENC###">unsubscribe or edit your profile, click here.</a>
-<BR>  ###GW2E###
+</form>
+<br />
+If you are subscribed already and want to <a href="###FORM_URL###&cmd=infomail&backURL=###FORM_URL_ENC###">unsubscribe or edit your profile, click here.</a>
+<br />  ###GW2E###
 <!-- ###TEMPLATE_CREATE### end-->
 
 
@@ -95,8 +95,8 @@ Are you subscribed already and wishes to <a href="###FORM_URL###&cmd=infomail&ba
 	Same as above...
 	EVAL_ERROR_FIELD_email is in addition an error message defined in TypoScript in case an email address does not verify to be of correct syntax.
 -->
-	<font color=red><strong>You must fill in this field!</strong></font><BR>
-	###EVAL_ERROR_FIELD_captcha###<BR>
+	<font color=red><strong>You must fill in this field!</strong></font><br />
+	###EVAL_ERROR_FIELD_captcha###<br />
 <!--###SUB_REQUIRED_FIELD_captcha### end-->
 <input type="text" size=30 name="FE[tt_address][captcha]" value="" />
 <!-- ###TEMPLATE_CAPTCHA### begin -->
@@ -119,10 +119,10 @@ Are you subscribed already and wishes to <a href="###FORM_URL###&cmd=infomail&ba
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>	This is the code shown when a new newsletter recipient is created:</em>
-<br>
-<br>
+<br />
+<br />
 
 
 <!-- ###TEMPLATE_CREATE_SAVED### begin
@@ -130,10 +130,10 @@ Are you subscribed already and wishes to <a href="###FORM_URL###&cmd=infomail&ba
 
 	You can use the newly created record as markers on the format ###FIELD_[fieldname]###
 -->
-###GW1B###Subscription recieved.###GW1E###<br>
-<br>
+###GW1B###Subscription recieved.###GW1E###<br />
+<br />
 ###GW2B###
-You're now subscribed to our newsletter. An email has been sent to your email address, ###FIELD_email###, with a link to the administration of your profile.<BR>Please notice that your subscription is not active until you've clicked a link in that email!
+You're now subscribed to our newsletter. An email has been sent to your email address, ###FIELD_email###, with a link to the administration of your profile.<br />Please notice that your subscription is not active until you've clicked a link in that email!
 ###GW2E###
 <!-- ###TEMPLATE_CREATE_SAVED### end-->
 
@@ -162,10 +162,10 @@ You're now subscribed to our newsletter. An email has been sent to your email ad
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>	This is the form used to edit the existing users.</em>
-<br>
-<br>
+<br />
+<br />
 
 
 <!-- ###TEMPLATE_EDIT### begin
@@ -173,65 +173,65 @@ You're now subscribed to our newsletter. An email has been sent to your email ad
 	
 	The form works with non-logged in users based on email-verification	
 -->
-<FORM name="tt_address_form" method="post" action="###FORM_URL###">
-###GW1B###Edit profile###GW1E###<br>
-<br>
+<form name="tt_address_form" method="post" action="###FORM_URL###">
+###GW1B###Edit profile###GW1E###<br />
+<br />
 ###GW2B###
 
 
 <!-- ###SUB_REQUIRED_FIELDS_WARNING### begin 
 	This is a general warning about incorrectly filled in fields.
 -->
-<B>Some of the required fields are not correctly filled in! Please do that!</B><br>
-<br>
+<b>Some of the required fields are not correctly filled in! Please do that!</b><br />
+<br />
 <!-- ###SUB_REQUIRED_FIELDS_WARNING### end -->
 
 
 
 
-<b>Your name:</b><BR>
+<b>Your name:</b><br />
 <!--###SUB_REQUIRED_FIELD_name### begin
 	This is shown only if the form is submitted and the field is configured to be "required" and at the same time not filled in.
 	The syntax is of the comment 'name' is: 	SUB_REQUIRED_FIELD_[enter-the-field-name-here]
 -->
-	<font color=red><strong>You must fill in this field!</strong></font><BR>
+	<font color=red><strong>You must fill in this field!</strong></font><br />
 <!--###SUB_REQUIRED_FIELD_name### end -->
-<input type="text" name="FE[tt_address][name]">
-<BR>
+<input type="text" name="FE[tt_address][name]" />
+<br />
 
 
 
 
-<br>
-<b>Email:</b><BR>
+<br />
+<b>Email:</b><br />
 <!--###SUB_REQUIRED_FIELD_email### begin
 	Same as above...
 	EVAL_ERROR_FIELD_email is in addition an error message defined in TypoScript in case an email address does not verify to be of correct syntax.
 -->
-	<font color=red><strong>You must fill in this field!</strong></font><BR>
-	###EVAL_ERROR_FIELD_email###<BR>
+	<font color=red><strong>You must fill in this field!</strong></font><br />
+	###EVAL_ERROR_FIELD_email###<br />
 <!--###SUB_REQUIRED_FIELD_email### end-->
 <input type="text" name="FE[tt_address][email]">
-<BR>
+<br />
 
 
 ###CE_CATLIST###
 
-<BR>
-<b>HTML emails?</b><BR>
-<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1>
-<BR>
+<br />
+<b>HTML emails?</b><br />
+<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value="1" />
+<br />
 
 ###CAPTCHA###
 
 
 	###HIDDENFIELDS###
 	<input type="Submit" name="whatever" value="Update">
-</FORM>
-<br>
+</form>
+<br />
 Click here to <a href="###FORM_URL###&rU=###REC_UID###&aC=###AUTH_CODE###&cmd=delete"><strong>delete (!)</strong></a> your registration!
 ###GW2E###
-<br>
+<br />
 <!-- ###TEMPLATE_EDIT### end-->
 
 
@@ -252,10 +252,10 @@ Click here to <a href="###FORM_URL###&rU=###REC_UID###&aC=###AUTH_CODE###&cmd=de
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>	This is displayed when a user has updated his profile:</em>
-<br>
-<br>
+<br />
+<br />
 
 
 <!-- ###TEMPLATE_EDIT_SAVED### begin
@@ -264,16 +264,16 @@ Click here to <a href="###FORM_URL###&rU=###REC_UID###&aC=###AUTH_CODE###&cmd=de
 	You can use the newly updated record as markers on the format ###FIELD_[fieldname]###
 -->
 
-###GW1B###Profile changed###GW1E###<br>
-<br>
+###GW1B###Profile changed###GW1E###<br />
+<br />
 ###GW2B###
 
-You've updated your profile. <BR>
-<BR>
-The new informations is:<BR>
-Name: ###FIELD_name###<BR>
-Email: ###FIELD_email###<BR>
-<BR>
+You've updated your profile. <br />
+<br />
+The new informations is:<br />
+Name: ###FIELD_name###<br />
+Email: ###FIELD_email###<br />
+<br />
 
 <a href="###FORM_URL###&cmd=edit&rU=###FIELD_uid###&aC=###AUTH_CODE###">Go back to edit.</a>
 ###GW2E###
@@ -306,10 +306,10 @@ Email: ###FIELD_email###<BR>
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>		This form is used to send the infomails.</em>
-<br>
-<br>
+<br />
+<br />
 
 
 
@@ -317,16 +317,18 @@ Email: ###FIELD_email###<BR>
 	This form is used to send the infomails.
 	You could also use this as a "did you forget your password?" service form.
 -->
-###GW1B###Do you wish to edit your profile?###GW1E###<br>
-<br>
+###GW1B###Do you wish to edit your profile?###GW1E###<br />
+<br />
 ###GW2B###
-Enter the email address <em>by which you're registered</em> here, and a link to the administration will be sent to your account:<br>
+Enter the email address <em>by which you're registered</em> here, and a link to the administration will be sent to your account:<br />
 
-<FORM name="tt_address_form" method="post" action="###FORM_URL###">
-<input type="text" name="fetch"><br>
-<input type="submit" name="whatever" value="Send">
+<form name="tt_address_form" method="post" action="###FORM_URL###">
+<input type="text" name="fetch" /><br />
+###CAPTCHA###
+<br />
+<input type="submit" name="whatever" value="Send" />
 	###HIDDENFIELDS###
-</FORM>
+</form>
 ###GW2E###
 <!-- ###TEMPLATE_INFOMAIL### end-->
 
@@ -347,38 +349,38 @@ Enter the email address <em>by which you're registered</em> here, and a link to 
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>		This template is the response page when a users has requested his password send to his email.</em>
-<br>
-<br>
+<br />
+<br />
 
 <!-- ###TEMPLATE_INFOMAIL_SENT### begin
 	This template is the response page when a users has requested his password send to his email.
 -->
-###GW1B###An email has been sent to your account with the required information###GW1E###<br>
-<br>
+###GW1B###An email has been sent to your account with the required information###GW1E###<br />
+<br />
 ###GW2B###
 
-<a href="###BACK_URL###"><strong>Go back...</strong></a><BR>
+<a href="###BACK_URL###"><strong>Go back...</strong></a><br />
 ###GW2E###
 
 <!-- ###TEMPLATE_INFOMAIL_SENT### end-->
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>		This template is the response page when no email is found.</em>
-<br>
-<br>
+<br />
+<br />
 
 <!-- ###TEMPLATE_INFOMAIL_NORECORD### begin
 	This template is the response page when no email is found.
 -->
-###GW1B###The email is not registered.###GW1E###<br>
-<br>
+###GW1B###The email is not registered.###GW1E###<br />
+<br />
 ###GW2B###
 
-<a href="###BACK_URL###"><strong>Go back to register.</strong></a><BR>
+<a href="###BACK_URL###"><strong>Go back to register.</strong></a><br />
 ###GW2E###
 
 <!-- ###TEMPLATE_INFOMAIL_NORECORD### end-->
@@ -393,20 +395,20 @@ Enter the email address <em>by which you're registered</em> here, and a link to 
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>		This template is the response page when a users has delete his subscription.</em>
-<br>
-<br>
+<br />
+<br />
 
 <!-- ###TEMPLATE_DELETE_SAVED### begin
 	This is the message displayed if you have just deleted your subscription
 -->
-###GW1B###You're now unsubscribed!###GW1E###<br>
-<br>
+###GW1B###You're now unsubscribed!###GW1E###<br />
+<br />
 ###GW2B###
 
-Name: ###FIELD_name###<BR>
-Email: ###FIELD_email###<BR>
+Name: ###FIELD_name###<br />
+Email: ###FIELD_email###<br />
 
 ###GW2E###
 <!-- ###TEMPLATE_DELETE_SAVED### end-->
@@ -428,40 +430,40 @@ Email: ###FIELD_email###<BR>
 
 
 
-<br>
-<br>
+<br />
+<br />
 <h2>'Setfixed' templates:</h2>
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>This template is the response page when a users has clicked a setfixed link.</em>
-<br>
-<br>
+<br />
+<br />
 <!-- ###TEMPLATE_SETFIXED_OK### begin
 	This is the message displayed if you have just deleted your subscription
 -->
-###GW1B###Your subscription was approved###GW1E###<br>
-<br>
+###GW1B###Your subscription was approved###GW1E###<br />
+<br />
 ###GW2B###
 
-Name: ###FIELD_name###<br>
+Name: ###FIELD_name###<br />
 Email: ###FIELD_email###
 
 ###GW2E###
 <!-- ###TEMPLATE_SETFIXED_OK### end-->
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>This template is the response page when a users has clicked a setfixed link.</em>
-<br>
-<br>
+<br />
+<br />
 <!-- ###TEMPLATE_SETFIXED_OK_DELETE### begin
 	This is the message displayed if you have just deleted your subscription
 -->
-###GW1B###Your subscription was DELETED!###GW1E###<br>
-<br>
+###GW1B###Your subscription was DELETED!###GW1E###<br />
+<br />
 ###GW2B###
-Name: ###FIELD_name###<br>
+Name: ###FIELD_name###<br />
 Email: ###FIELD_email###
 ###GW2E###
 <!-- ###TEMPLATE_SETFIXED_OK_DELETE### end-->
@@ -469,16 +471,16 @@ Email: ###FIELD_email###
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>This template is the response page when a users has clicked a setfixed link.</em>
-<br>
-<br>
+<br />
+<br />
 <!-- ###TEMPLATE_SETFIXED_FAILED### begin
 	This is the message displayed if you have just deleted your subscription
 -->
 
-###GW1B###Sorry, setting subscription options failed!###GW1E###<br>
-<br>
+###GW1B###Sorry, setting subscription options failed!###GW1E###<br />
+<br />
 ###GW2B###
 May happen if you click the setfixed link a second time (if the record has changed since the setfixed link was generated this error will happen!)
 ###GW2E###
@@ -499,16 +501,16 @@ May happen if you click the setfixed link a second time (if the record has chang
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>	Authentication failed message.</em>
-<br>
-<br>
+<br />
+<br />
 
 <!-- ###TEMPLATE_AUTH### begin
 	Authentication failed message
 -->
-###GW1B###Authentication failed!###GW1E###<br>
-<br>
+###GW1B###Authentication failed!###GW1E###<br />
+<br />
 ###GW2B###
 For some reason the authentication failed. 
 ###GW2E###
@@ -539,23 +541,23 @@ For some reason the authentication failed.
 
 
 
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
 <H1>EMAIL TEMPLATES:</H1>
-In these plain text email templates the first line with content is used as subject in the mails.<br>
+In these plain text email templates the first line with content is used as subject in the mails.<br />
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
-<em>This template is used to notify a person by email that he is subscribed to the newsletter.<br>
+<br /><br /><br /><br /><HR><br /><br /><br />
+<em>This template is used to notify a person by email that he is subscribed to the newsletter.<br />
 You can use the newly created record as markers on the format ###FIELD_[fieldname]###
 </em>
-<br>
-<br>
+<br />
+<br />
 
 
 <pre>
@@ -564,11 +566,11 @@ You can use the newly created record as markers on the format ###FIELD_[fieldnam
 	You can use the newly created record as markers on the format ###FIELD_[fieldname]###
 -->
 <!--###SUB_RECORD###-->
-Typo3 Direct Mailer
+TYPO3 Direct Mailer
 
 Dear ###FIELD_name###
 
-You're now subscribed to a Typo3 Testsite newsletter.
+You're now subscribed to a TYPO3 Testsite newsletter.
 
 IMPORTANT:
 
@@ -587,12 +589,12 @@ If you wish to edit your personal data, click this link:
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
-<em>This is the template used for the administrator notifycation email upon a new subscription.<br>
+<br /><br /><br /><br /><HR><br /><br /><br />
+<em>This is the template used for the administrator notifycation email upon a new subscription.<br />
 You can use the newly created record as markers on the format ###FIELD_[fieldname]###
 </em>
-<br>
-<br>
+<br />
+<br />
 
 
 <pre>
@@ -612,16 +614,16 @@ Email: ###FIELD_email###
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>The template for forgotten passwords (infomail 'FORGOTPASSWORD' template!)</em>
-<br>
-<br>
+<br />
+<br />
 <pre>
 <!-- ###EMAIL_TEMPLATE_FORGOTPASSWORD### begin
 	The template for forgotten passwords (infomail 'FORGOTPASSWORD' template!)
 -->
 <!--###SUB_RECORD###-->
-Typo3 Testsite Newsletter, Admin link
+TYPO3 Testsite Newsletter, Admin link
 
 Dear ###FIELD_name###
 
@@ -638,10 +640,10 @@ Click here to DELETE (!) your subscription
 
 
 
-<BR><BR><BR><BR><HR><BR><BR><BR>
+<br /><br /><br /><br /><HR><br /><br /><br />
 <em>Template used if the infomail was empty!</em>
-<br>
-<br>
+<br />
+<br />
 <pre>
 <!-- ###EMAIL_TEMPLATE_NORECORD### begin
 	Template used if the infomail was empty!

@@ -76,7 +76,7 @@ plugin.feadmin.dmailsubscription {
 
 	evalErrors.email.uniqueLocal = Apparently you're already registered with this email address!
 	evalErrors.email.email = This is not a proper email address!
-	evalErrors.captcha.captcha = Captcha code is not right.
+	evalErrors.captcha.captcha = Captcha code is not correct.
 
 	parseValues.module_sys_dmail_category = checkArray,setEmptyIfAbsent 
 	parseValues.module_sys_dmail_html = setEmptyIfAbsent 
