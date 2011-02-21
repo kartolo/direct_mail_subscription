@@ -42,21 +42,34 @@
 <br />
 ###GW2B###
 
+<b><label for="fe_ttaddress_gender_input" id="label-fe_ttaddress_gender">Title</label></b><br />
+<!--###SUB_REQUIRED_FIELD_gender### begin
+	This is shown only if the form is submitted and the field is configured to be "required" and at the same time not filled in.
+	The syntax is of the comment 'name' is: 	SUB_REQUIRED_FIELD_[enter-the-field-name-here]
+-->
+	<font color=red><strong>You must fill in this field!</strong></font><br />
+<!--###SUB_REQUIRED_FIELD_gender### end -->
+	<div>
+		<select name="FE[tt_address][gender]">
+			<option value="m">Mr.</option>
+			<option value="f">Mrs.</option>
+		</select>
+	</div>
 
-<b>Your name:</b><br />
+<b><label for="fe_ttaddress_name_input">Your name:</label></b><br />
 <!--###SUB_REQUIRED_FIELD_name### begin
 	This is shown only if the form is submitted and the field is configured to be "required" and at the same time not filled in.
 	The syntax is of the comment 'name' is: 	SUB_REQUIRED_FIELD_[enter-the-field-name-here]
 -->
 	<font color=red><strong>You must fill in this field!</strong></font><br />
 <!--###SUB_REQUIRED_FIELD_name### end -->
-<input type="text" name="FE[tt_address][name]" />
+<input type="text" name="FE[tt_address][name]" id="fe_ttaddress_name_input" />
 <br />
 
 
 
 <br />
-<b>Email:</b><br />
+<b><label for="fe_ttaddress_email_input">Email:</label></b><br />
 <!--###SUB_REQUIRED_FIELD_email### begin
 	Same as above...
 	EVAL_ERROR_FIELD_email is in addition an error message defined in TypoScript in case an email address does not verify to be of correct syntax.
@@ -64,14 +77,14 @@
 	<font color=red><strong>You must fill in this field!</strong></font><br />
 	###EVAL_ERROR_FIELD_email###<br />
 <!--###SUB_REQUIRED_FIELD_email### end-->
-<input type="text" name="FE[tt_address][email]" />
+<input type="text" name="FE[tt_address][email]" id="fe_ttaddress_email_input" />
 <br />
 
 ###CE_CATLIST###
 
 <br />
-<b>HTML emails?</b><br />
-<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1 />
+<b><label for="fe_ttaddress_html_input">HTML emails?</label></b><br />
+<input type="checkbox" name="FE[tt_address][module_sys_dmail_html]" value=1 id="fe_ttaddress_html_input" />
 <br />
 ###CAPTCHA###
 <br />
@@ -186,7 +199,19 @@ You're now subscribed to our newsletter. An email has been sent to your email ad
 <br />
 <!-- ###SUB_REQUIRED_FIELDS_WARNING### end -->
 
-
+<b><label for="fe_ttaddress_gender_input" id="label-fe_ttaddress_gender">Title</label></b><br />
+<!--###SUB_REQUIRED_FIELD_gender### begin
+	This is shown only if the form is submitted and the field is configured to be "required" and at the same time not filled in.
+	The syntax is of the comment 'name' is: 	SUB_REQUIRED_FIELD_[enter-the-field-name-here]
+-->
+	<font color=red><strong>You must fill in this field!</strong></font><br />
+<!--###SUB_REQUIRED_FIELD_gender### end -->
+	<div>
+		<select name="FE[tt_address][gender]">
+			<option value="m">Mr.</option>
+			<option value="f">Mrs.</option>
+		</select>
+	</div>
 
 
 <b>Your name:</b><br />

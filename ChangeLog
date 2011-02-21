@@ -1,3 +1,7 @@
+2011-02-22 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* locallang file in xml-format
+	* optimizing localized gender: localized gender can be overwrite per TS
+
 2011-02-18 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* code clean up captcha and html template
 	

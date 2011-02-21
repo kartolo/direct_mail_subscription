@@ -16,18 +16,18 @@ class user_dmailsubscribe {
 	 */
 	function user_dmailsubscribe()	{
 		$this->cObj = t3lib_div::makeInstance('tslib_cObj');
-		
+		$this->conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['feadmin.']['dmailsubscription.'];
 		/** 
 		 * IK 27.04.09 
 		 * include Locallang 
 		 */ 
-		if ($GLOBALS['TSFE']->config['config']['language'])     { 
+		if ($GLOBALS['TSFE']->config['config']['language']) { 
 			$this->LLkey = $GLOBALS['TSFE']->config['config']['language']; 
 			if ($GLOBALS['TSFE']->config['config']['language_alt']) { 
 				$this->altLLkey = $GLOBALS['TSFE']->config['config']['language_alt']; 
 			} 
 		} 
-		$this->pi_loadLL(); 
+		$this->pi_loadLL();
 	}
 
 	/**
@@ -97,7 +97,13 @@ class user_dmailsubscribe {
 			 * localized title in own field 
 			 */ 
 			if (t3lib_div::inList('m,f', $conf['rec']['gender'])) { 
-				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tt_address','uid='.intval($conf['rec']['uid']),array('tx_directmailsubscription_localgender'=>$this->pi_getLL('tt_address.gender.'.$conf['rec']['gender'])));
+				$GLOBALS['TYPO3_DB']->exec_UPDATEquery(
+					'tt_address',
+					'uid='.intval($conf['rec']['uid']),
+					array(
+						'tx_directmailsubscription_localgender' => $this->pi_getLL('tt_addressGender'.strtoupper($conf['rec']['gender']))
+					)
+				);
 			} 
 		}
 		return;
@@ -143,7 +149,7 @@ class user_dmailsubscribe {
 	 */
 	function pi_loadLL()	{
 		if (!$this->LOCAL_LANG_loaded)	{
-			$basePath = t3lib_extMgm::extPath('direct_mail_subscription').'pi/locallang.php';
+			$basePath = t3lib_extMgm::extPath('direct_mail_subscription').'pi/locallang.xml';
 
 				// php or xml as source: In any case the charset will be that of the system language.
 				// However, this function guarantees only return output for default language plus the specified language (which is different from how 3.7.0 dealt with it)
