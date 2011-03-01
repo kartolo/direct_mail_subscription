@@ -1,3 +1,7 @@
+2011-03-01 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* #12968: added captcha to infomail form.
+	* Added README file
+	
 2011-02-22 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* locallang file in xml-format
 	* optimizing localized gender: localized gender can be overwrite per TS

@@ -730,32 +730,40 @@ class user_feAdmin	{
 				$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
 			}
 			
-			/* CAPTCHA */
-			if (t3lib_extMgm::isLoaded('captcha')){
-				session_start();
-				$captchaStr = $_SESSION['tx_captcha_string'];
-				$_SESSION['tx_captcha_string'] = '';
-				
-				if ($captchaStr && $this->dataArr['captcha'] !== $captchaStr) { 
-					$theField = 'captcha';
-					$tempArr[] = $theField;
-					$this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
-//					$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
-					
-//					$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
-//					$this->markerArray['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
-//					$this->markerArray['###CAPTCHA###'] = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $this->markerArray);
-					$errorMsg = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
-					$this->markerArray['###CAPTCHA###'] = $this->getCaptcha($errorMsg);
-					
-				}
-			} 
+			$this->checkCaptcha();
 			
 			
 		}
 		$this->failure=implode(',',$tempArr);	 //$failure will show which fields were not OK
 	}
 
+	/**
+	 * check captcha
+	 * 
+	 * @return	bool	@captcha:TRUE if captcha not loaded or captcha is correct, FALSE on wrong captcha
+	 */
+	function checkCaptcha() {
+		/* CAPTCHA */
+		$captcha = TRUE;
+		
+		if (t3lib_extMgm::isLoaded('captcha') && isset($this->dataArr['captcha'])){
+			session_start();
+			$captchaStr = $_SESSION['tx_captcha_string'];
+			$_SESSION['tx_captcha_string'] = '';
+
+			if ($captchaStr && $this->dataArr['captcha'] !== $captchaStr) {
+				$captcha = FALSE;
+				$theField = 'captcha';
+				$tempArr[] = $theField;
+				$this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
+				$errorMsg = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
+				$this->markerArray['###CAPTCHA###'] = $this->getCaptcha($errorMsg);
+			}
+		}
+		return $captcha;
+	}
+	
+	
 	/**
 	 * Preforms user processing of input array - triggered right after the function call to evalValues() IF TypoScript property "evalFunc" was set.
 	 *
@@ -1223,6 +1231,11 @@ class user_feAdmin	{
 		$templateCode = $this->cObj->getSubpart($this->templateCode, $key);
 		$this->setCObjects($templateCode,is_array($r)?$r:array());
 		
+		/* CAPTCHA */
+		if (!$this->markerArray['###CAPTCHA###']) {
+			$this->markerArray['###CAPTCHA###'] = $this->getCaptcha();
+		}
+		
 		$markerArray = is_array($r) ? $this->cObj->fillInMarkerArray($this->markerArray, $r, '', TRUE, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray;
 		
 		
@@ -1392,7 +1405,14 @@ class user_feAdmin	{
 	function sendInfoMail()	{
 		if ($this->conf['infomail'] && $this->conf['email.']['field'])	{
 			$fetch = t3lib_div::_GP('fetch');
-			if ($fetch)	{
+			
+			//check the failureMsg array, since evalValues is called
+			$captcha = TRUE;
+			if (is_array($this->failureMsg['captcha'])) {
+				$captcha = FALSE;
+			}
+			 
+			if ($fetch && $captcha)	{
 					// Getting infomail config.
 				$key= trim(t3lib_div::_GP('key'));
 				if (is_array($this->conf['infomail.'][$key.'.']))		{
