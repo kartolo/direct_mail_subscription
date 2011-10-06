@@ -876,6 +876,11 @@ class user_feAdmin	{
 
 					$this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable,$newId);
 					$this->userProcess_alt($this->conf['create.']['userFunc_afterSave'],$this->conf['create.']['userFunc_afterSave.'],array('rec'=>$this->currentArr));
+
+					// reloading the currentArr from the DB so that any DB changes in userFunc is taken into account
+					unset($this->currentArr);
+					$this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable,$newId);
+					
 					$this->saved=1;
 				}
 			break;
