@@ -1,5 +1,6 @@
 2011-20-06 Ivan Kartolo <ivan.kartolo@dkd.de>
-	# #29676: fixes unreplaced marker
+	* #29676: fixes unreplaced marker
+	* #13264: moved typoscript to static template
 	
 2011-03-01 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #12968: added captcha to infomail form.
