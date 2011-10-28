@@ -677,7 +677,7 @@ class user_feAdmin	{
 							}
 						break;
 						case 'email':
-							if (!$this->cObj->checkEmail($this->dataArr[$theField]))	{
+							if (!t3lib_div::validEmail($this->dataArr[$theField]))	{
 								$tempArr[]=$theField;
 								$this->failureMsg[$theField][] = $this->getFailure($theField, $theCmd, 'You must enter a valid email address');
 							}
@@ -729,12 +729,10 @@ class user_feAdmin	{
 				}
 				$this->markerArray['###EVAL_ERROR_FIELD_'.$theField.'###'] = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
 			}
-			
-			$this->checkCaptcha();
-			
-			
+			$tempArr[] = $this->checkCaptcha();
 		}
-		$this->failure=implode(',',$tempArr);	 //$failure will show which fields were not OK
+		
+		$this->failure = implode(',',$tempArr);	 //$failure will show which fields were not OK
 	}
 
 	/**
@@ -751,16 +749,18 @@ class user_feAdmin	{
 			$captchaStr = $_SESSION['tx_captcha_string'];
 			$_SESSION['tx_captcha_string'] = '';
 
-			if ($captchaStr && $this->dataArr['captcha'] !== $captchaStr) {
+			if (empty($captchaStr) || ($this->dataArr['captcha'] !== $captchaStr)) {
 				$captcha = FALSE;
 				$theField = 'captcha';
-				$tempArr[] = $theField;
 				$this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
 				$errorMsg = is_array($this->failureMsg[$theField]) ? implode('<br />',$this->failureMsg[$theField]) : '';
 				$this->markerArray['###CAPTCHA###'] = $this->getCaptcha($errorMsg);
 			}
 		}
-		return $captcha;
+		
+		if (isset($theField)) {
+			return $theField;
+		}
 	}
 	
 	
@@ -1363,7 +1363,7 @@ class user_feAdmin	{
 	function getCaptcha($errorMsg='') {
 		if (t3lib_extMgm::isLoaded('captcha')){
 			$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
-			$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
+			$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="/'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
 			
 			if (!empty($errorMsg)) {
 			$markerArrayCaptcha['###EVAL_ERROR_FIELD_captcha###'] = $errorMsg;
@@ -1411,6 +1411,10 @@ class user_feAdmin	{
 		if ($this->conf['infomail'] && $this->conf['email.']['field'])	{
 			$fetch = t3lib_div::_GP('fetch');
 			
+			if ($fetch) {
+				$this->evalValues();
+			}
+			
 			//check the failureMsg array, since evalValues is called
 			$captcha = TRUE;
 			if (is_array($this->failureMsg['captcha'])) {
@@ -1453,6 +1457,7 @@ class user_feAdmin	{
 
 			} else {
 				$content = $this->getPlainTemplate('###TEMPLATE_INFOMAIL###');
+				$content = $this->removeRequired($content ,$this->failure);
 			}
 		} else $content='Error: infomail option is not available or emailField is not setup in TypoScript';
 		return $content;

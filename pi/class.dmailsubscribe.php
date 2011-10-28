@@ -10,7 +10,9 @@ class user_dmailsubscribe {
 	var $LLtestPrefix = '';				// You can set this during development to some value that makes it easy for you to spot all labels that ARe delivered by the getLL function.
 	var $LLtestPrefixAlt = '';			// Save as LLtestPrefix, but additional prefix for the alternative value in getLL() function calls
 
-
+	var $scriptRelPath = 'pi/class.dmailsubscribe.php';
+	var $extKey = 'direct_mail_subscription';
+	
 	/**
 	 * Constructor
 	 */
@@ -74,6 +76,12 @@ class user_dmailsubscribe {
 	function saveRecord($conf)    {
 		//print "TEST";
 		//t3lib_div::print_array($conf);
+		
+		//check loaded LL
+		if (!$this->LOCAL_LANG_loaded){
+			$this->user_dmailsubscribe();
+		}
+
 		if(intval($conf['rec']['uid'])) {
 			$fe = t3lib_div::_GP('FE');
 			$newFieldsArr = $fe['tt_address']['module_sys_dmail_category'];
@@ -113,33 +121,59 @@ class user_dmailsubscribe {
 	/**
 	 * LOCALLANG copied from pibase
 	 */
-
-
+	
 	/**
-	 * Returns the localized label of the LOCAL_LANG key, $key
-	 * Notice that for debugging purposes prefixes for the output values can be set with the internal vars ->LLtestPrefixAlt and ->LLtestPrefix
-	 *
-	 * @param	string		The key from the LOCAL_LANG array for which to return the value.
-	 * @param	string		Alternative string to return IF no value is found set for the key, neither for the local language nor the default.
-	 * @param	boolean		If true, the output label is passed through htmlspecialchars()
-	 * @return	string		The value from LOCAL_LANG.
-	 */
-	function pi_getLL($key,$alt='',$hsc=FALSE)	{
-		if (isset($this->LOCAL_LANG[$this->LLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->LLkey][$key], $this->LOCAL_LANG_charset[$this->LLkey][$key]);	// The "from" charset is normally empty and thus it will convert from the charset of the system language, but if it is set (see ->pi_loadLL()) it will be used.
-		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$this->altLLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$this->altLLkey][$key], $this->LOCAL_LANG_charset[$this->altLLkey][$key]);	// The "from" charset is normally empty and thus it will convert from the charset of the system language, but if it is set (see ->pi_loadLL()) it will be used.
-		} elseif (isset($this->LOCAL_LANG['default'][$key]))	{
-			$word = $this->LOCAL_LANG['default'][$key];	// No charset conversion because default is english and thereby ASCII
+	* Returns the localized label of the LOCAL_LANG key, $key
+	* Notice that for debugging purposes prefixes for the output values can be set with the internal vars ->LLtestPrefixAlt and ->LLtestPrefix
+	*
+	* @param	string		The key from the LOCAL_LANG array for which to return the value.
+	* @param	string		Alternative string to return IF no value is found set for the key, neither for the local language nor the default.
+	* @param	boolean		If TRUE, the output label is passed through htmlspecialchars()
+	* @return	string		The value from LOCAL_LANG.
+	*/
+	public function pi_getLL($key, $alternativeLabel = '', $hsc = FALSE) {
+		if (isset($this->LOCAL_LANG[$this->LLkey][$key][0]['target'])) {
+	
+			// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
+			if (isset($this->LOCAL_LANG_charset[$this->LLkey][$key])) {
+				$word = $GLOBALS['TSFE']->csConv(
+				$this->LOCAL_LANG[$this->LLkey][$key][0]['target'],
+				$this->LOCAL_LANG_charset[$this->LLkey][$key]
+				);
+			} else {
+				$word = $this->LOCAL_LANG[$this->LLkey][$key][0]['target'];
+			}
+		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$this->altLLkey][$key][0]['target'])) {
+	
+			// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
+			if (isset($this->LOCAL_LANG_charset[$this->altLLkey][$key])) {
+				$word = $GLOBALS['TSFE']->csConv(
+				$this->LOCAL_LANG[$this->altLLkey][$key][0]['target'],
+				$this->LOCAL_LANG_charset[$this->altLLkey][$key]
+				);
+			} else {
+				$word = $this->LOCAL_LANG[$this->altLLkey][$key][0]['target'];
+			}
+		} elseif (isset($this->LOCAL_LANG['default'][$key][0]['target'])) {
+	
+			// Get default translation (without charset conversion, english)
+			$word = $this->LOCAL_LANG['default'][$key][0]['target'];
 		} else {
-			$word = $this->LLtestPrefixAlt.$alt;
+	
+			// Return alternative string or empty
+			$word = (isset($this->LLtestPrefixAlt)) ? $this->LLtestPrefixAlt . $alternativeLabel : $alternativeLabel;
 		}
-
-		$output = $this->LLtestPrefix.$word;
-		if ($hsc)	$output = htmlspecialchars($output);
-
+	
+		$output = (isset($this->LLtestPrefix)) ? $this->LLtestPrefix . $word : $word;
+	
+		if ($hsc) {
+			$output = htmlspecialchars($output);
+		}
+	
 		return $output;
 	}
+	
+	
 
 	/**
 	 * Loads local-language values by looking for a "locallang.php" file in the plugin class directory ($this->scriptRelPath) and if found includes it.
@@ -147,29 +181,34 @@ class user_dmailsubscribe {
 	 *
 	 * @return	void
 	 */
-	function pi_loadLL()	{
-		if (!$this->LOCAL_LANG_loaded)	{
-			$basePath = t3lib_extMgm::extPath('direct_mail_subscription').'pi/locallang.xml';
+	public function pi_loadLL() {
+		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
+			$basePath = 'EXT:' . $this->extKey . '/' . dirname($this->scriptRelPath) . '/locallang.xml';
 
-				// php or xml as source: In any case the charset will be that of the system language.
-				// However, this function guarantees only return output for default language plus the specified language (which is different from how 3.7.0 dealt with it)
-			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey);
-			if ($this->altLLkey)	{
-				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
-				$this->LOCAL_LANG = array_merge(is_array($this->LOCAL_LANG) ? $this->LOCAL_LANG : array(),$tempLOCAL_LANG);
+				// Read the strings in the required charset (since TYPO3 4.2)
+			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey, $GLOBALS['TSFE']->renderCharset);
+			if ($this->altLLkey) {
+				$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
 			}
 
 				// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
-			if (is_array($this->conf['_LOCAL_LANG.']))	{
-				reset($this->conf['_LOCAL_LANG.']);
-				while(list($k,$lA)=each($this->conf['_LOCAL_LANG.']))	{
-					if (is_array($lA))	{
-						$k = substr($k,0,-1);
-						foreach($lA as $llK => $llV)	{
-							if (!is_array($llV))	{
-								$this->LOCAL_LANG[$k][$llK] = $llV;
-								if ($k != 'default')	{
-									$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];	// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages (thus no conversion)
+			$confLL = $this->conf['_LOCAL_LANG.'];
+			if (is_array($confLL)) {
+				foreach ($confLL as $languageKey => $languageArray) {
+						// Don't process label if the langue is not loaded
+					$languageKey = substr($languageKey,0,-1);
+					if (is_array($languageArray) && is_array($this->LOCAL_LANG[$languageKey])) {
+							// Remove the dot after the language key
+						foreach ($languageArray as $labelKey => $labelValue) {
+							if (!is_array($labelValue))	{
+								$this->LOCAL_LANG[$languageKey][$labelKey][0]['target'] = $labelValue;
+
+									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset"
+									// and if that is not set, assumed to be that of the individual system languages
+								if ($GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset']) {
+									$this->LOCAL_LANG_charset[$languageKey][$labelKey] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];
+								} else {
+									$this->LOCAL_LANG_charset[$languageKey][$labelKey] = $GLOBALS['TSFE']->csConvObj->charSetArray[$languageKey];
 								}
 							}
 						}

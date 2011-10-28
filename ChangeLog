@@ -1,4 +1,8 @@
-2011-20-06 Ivan Kartolo <ivan.kartolo@dkd.de>
+2011-10-28 Ivan Kartolo <ivan.kartolo@dkd.de>
+	* #29677: fix captcha checking
+	* compatibility to 4.6
+
+2011-10-06 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #29676: fixes unreplaced marker
 	* #13264: moved typoscript to static template
 	

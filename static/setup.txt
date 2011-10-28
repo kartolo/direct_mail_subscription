@@ -44,15 +44,19 @@ plugin.feadmin.dmailsubscription {
 
 	// Info-mail setup
 	infomail = 1
-	infomail.default {
-		label = FORGOTPASSWORD
+	infomail {
+		default {
+			label = FORGOTPASSWORD
+		}
+		required = captcha, email 
+ 		fields = captcha, email
 	}
-
+	
 	// Edit setup
 	edit = 1
 	edit {
-		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html
-		required = gender, name, email
+		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html, captcha
+		required = gender, name, email, captcha
 		evalValues.email = uniqueLocal, email
 		userFunc_afterSave = user_dmailsubscribe->saveRecord		
 	}
@@ -89,4 +93,10 @@ plugin.feadmin.dmailsubscription {
 	email.fromName = {$plugin.feadmin.dmailsubscription.emailName}
 	email.admin = {$plugin.feadmin.dmailsubscription.email}
 	email.field = email
+}
+
+tt_content.list.20 {
+	21 = CASE
+	21.key.field = layout
+	21.0 = < plugin.feadmin.dmailsubscription
 }
