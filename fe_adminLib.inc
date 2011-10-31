@@ -258,7 +258,7 @@ class user_feAdmin	{
 			$this->deleteRecord();
 		}
 			// If incoming data is seen...
-		if (is_array($this->dataArr))	{
+		if (is_array($this->dataArr) && count(t3lib_div::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha')))	{
 				// Evaluation of data:
 			$this->parseValues();
 			$this->overrideValues();
