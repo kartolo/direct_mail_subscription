@@ -1,5 +1,6 @@
 2011-11-01 Ivan Kartolo <ivan.kartolo@dkd.de>
-	* Tweaking locallang for TYPO3 < 4.6.x 
+	* Tweaking locallang for TYPO3 < 4.6.x
+	* Release 1.2.0 
 	
 2011-10-31 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #29677: tweaking captcha in infomail
