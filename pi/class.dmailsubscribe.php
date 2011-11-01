@@ -191,6 +191,17 @@ class user_dmailsubscribe {
 				$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
 			}
 
+			//compatibility to pre 4.6.x locallang handling
+			if (!t3lib_div::compat_version('4.6.0')) {
+				$tempLocalLang = $this->LOCAL_LANG;
+				unset($this->LOCAL_LANG);
+				foreach($tempLocalLang as $langKey => $langArr) {
+					foreach ($langArr as $labelK => $labelV ) {
+						$this->LOCAL_LANG[$langKey][$labelK][0]['target'] = $labelV;
+					}
+				}
+			}
+
 				// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
 			$confLL = $this->conf['_LOCAL_LANG.'];
 			if (is_array($confLL)) {
