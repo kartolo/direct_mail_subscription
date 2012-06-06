@@ -183,8 +183,8 @@ You're now subscribed to our newsletter. An email has been sent to your email ad
 
 <!-- ###TEMPLATE_EDIT### begin
 	This is the form used to edit the existing users.
-	
-	The form works with non-logged in users based on email-verification	
+
+	The form works with non-logged in users based on email-verification
 -->
 <form name="tt_address_form" method="post" action="###FORM_URL###">
 ###GW1B###Edit profile###GW1E###<br />
@@ -192,7 +192,7 @@ You're now subscribed to our newsletter. An email has been sent to your email ad
 ###GW2B###
 
 
-<!-- ###SUB_REQUIRED_FIELDS_WARNING### begin 
+<!-- ###SUB_REQUIRED_FIELDS_WARNING### begin
 	This is a general warning about incorrectly filled in fields.
 -->
 <b>Some of the required fields are not correctly filled in! Please do that!</b><br />
@@ -537,7 +537,7 @@ May happen if you click the setfixed link a second time (if the record has chang
 ###GW1B###Authentication failed!###GW1E###<br />
 <br />
 ###GW2B###
-For some reason the authentication failed. 
+For some reason the authentication failed.
 ###GW2E###
 <!-- ###TEMPLATE_AUTH### end-->
 
@@ -611,6 +611,37 @@ If you wish to edit your personal data, click this link:
 <!--###SUB_RECORD###-->
 <!-- ###EMAIL_TEMPLATE_CREATE_SAVED### end-->
 </pre>
+
+
+
+
+<br /><br /><br /><br /><HR><br /><br /><br />
+<em>This template is used to notify a person by email that he has confirmed the subscription.<br />
+You can use the newly created record as markers on the format ###FIELD_[fieldname]###
+</em>
+<br />
+<br />
+
+
+<pre>
+<!-- ###EMAIL_TEMPLATE_SETFIXED_approve### begin
+	This template is used to notify a person by email that he has confirmed his subscription
+	You can use the newly created record as markers on the format ###FIELD_[fieldname]###
+-->
+<!--###SUB_RECORD###-->
+TYPO3 Direct Mailer
+
+Dear ###FIELD_tx_directmailsubscription_localgender### ###FIELD_name###
+
+You have successfully confirmed your subscription.
+
+If you wish to edit your personal data, click this link:
+###THIS_URL######FORM_URL###&cmd=edit&aC=###SYS_AUTHCODE###&rU=###FIELD_uid###
+
+<!--###SUB_RECORD###-->
+<!-- ###EMAIL_TEMPLATE_SETFIXED_approve### end-->
+</pre>
+
 
 
 

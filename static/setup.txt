@@ -1,4 +1,4 @@
-includeLibs.directmailsubscribe = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php 
+includeLibs.directmailsubscribe = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php
 plugin.feadmin.dmailsubscription >
 plugin.feadmin.dmailsubscription = USER_INT
 plugin.feadmin.dmailsubscription {
@@ -39,7 +39,7 @@ plugin.feadmin.dmailsubscription {
 	}
 
 	delete = 1
-	
+
 	defaultCmd=create
 
 	// Info-mail setup
@@ -48,17 +48,17 @@ plugin.feadmin.dmailsubscription {
 		default {
 			label = FORGOTPASSWORD
 		}
-		required = captcha, email 
+		required = captcha, email
  		fields = captcha, email
 	}
-	
+
 	// Edit setup
 	edit = 1
 	edit {
 		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html, captcha
 		required = gender, name, email, captcha
 		evalValues.email = uniqueLocal, email
-		userFunc_afterSave = user_dmailsubscribe->saveRecord		
+		userFunc_afterSave = user_dmailsubscribe->saveRecord
 	}
 
 	// Create setup
@@ -66,8 +66,10 @@ plugin.feadmin.dmailsubscription {
 	create {
 		userFunc_afterSave = user_dmailsubscribe->saveRecord
 		preview = 0
-		fields = gender, name, hidden, email, module_sys_dmail_category, module_sys_dmail_html, captcha
-		required = gender, name, email, captcha
+		// add captcha, if you use captcha
+		fields = gender, name, hidden, email, module_sys_dmail_category, module_sys_dmail_html
+		required = gender, name, email
+
 		noSpecialLoginForm = 1
 		# Initially hide the user until he approves!
 		overrideValues.hidden = 1
@@ -75,16 +77,16 @@ plugin.feadmin.dmailsubscription {
 	}
 
 	authcodeFields = uid
-	authcodeFields.addKey = 
-	authcodeFields.addDate = 
+	authcodeFields.addKey =
+	authcodeFields.addDate =
 
 	evalErrors.email.uniqueLocal = Apparently you're already registered with this email address!
 	evalErrors.email.email = This is not a proper email address!
 	evalErrors.captcha.captcha = Captcha code is not correct.
 
-	parseValues.module_sys_dmail_category = checkArray,setEmptyIfAbsent 
-	parseValues.module_sys_dmail_html = setEmptyIfAbsent 
-	
+	parseValues.module_sys_dmail_category = checkArray,setEmptyIfAbsent
+	parseValues.module_sys_dmail_html = setEmptyIfAbsent
+
 	pid = {$plugin.feadmin.dmailsubscription.pid}
 	//always search recursively
 	pidRecursive = 1

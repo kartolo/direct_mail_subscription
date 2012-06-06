@@ -1,7 +1,11 @@
+2012-06-06 Ivan Kartolo <ivan@kartolo.de>
+	* using swiftmailer
+	* min TYPO3 4.5
+
 2011-11-01 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* Tweaking locallang for TYPO3 < 4.6.x
-	* Release 1.2.0 
-	
+	* Release 1.2.0
+
 2011-10-31 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #29677: tweaking captcha in infomail
 
@@ -12,18 +16,18 @@
 2011-10-06 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #29676: fixes unreplaced marker
 	* #13264: moved typoscript to static template
-	
+
 2011-03-01 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* #12968: added captcha to infomail form.
 	* Added README file
-	
+
 2011-02-22 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* locallang file in xml-format
 	* optimizing localized gender: localized gender can be overwrite per TS
 
 2011-02-18 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* code clean up captcha and html template
-	
+
 2011-02-09 Ivan Kartolo <ivan.kartolo@dkd.de>
 	* added captcha in subscription and edit form
 	* added the ability to search for user recursively

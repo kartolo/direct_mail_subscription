@@ -110,7 +110,11 @@ class user_feAdmin	{
 	var $thePid = 0;
 	var $markerArray = array();
 	var $templateCode='';
+
+	/** @var $cObj tslib_cObj */
 	var $cObj;
+
+	var $conf = array();
 
 	var $cmd;
 	var $preview;
@@ -238,6 +242,7 @@ class user_feAdmin	{
 
 			// Setting incoming data. Non-stripped
 		$fe=t3lib_div::_GP('FE');
+
 		$this->dataArr = $fe[$this->theTable];	// Incoming data.
 
 			// Checking template file and table value
@@ -644,7 +649,12 @@ class user_feAdmin	{
 					$recExist=1;
 				break;
 				default:
-					$recordTestPid = $this->thePid ? $this->thePid : t3lib_div::intval_positive($this->dataArr['pid']);
+					if (is_callable(array('t3lib_utility_Math','convertToPositiveInteger'))) {
+						$pid = t3lib_utility_Math::convertToPositiveInteger($this->dataArr['pid']);
+					} else {
+						$pid = t3lib_div::intval_positive($this->dataArr['pid']);
+					}
+					$recordTestPid = $this->thePid ? $this->thePid : $pid ;
 				break;
 			}
 
@@ -731,19 +741,19 @@ class user_feAdmin	{
 			}
 			$tempArr[] = $this->checkCaptcha();
 		}
-		
+
 		$this->failure = implode(',',$tempArr);	 //$failure will show which fields were not OK
 	}
 
 	/**
 	 * check captcha
-	 * 
+	 *
 	 * @return	bool	@captcha:TRUE if captcha not loaded or captcha is correct, FALSE on wrong captcha
 	 */
 	function checkCaptcha() {
 		/* CAPTCHA */
 		$captcha = TRUE;
-		
+
 		if (t3lib_extMgm::isLoaded('captcha') && isset($this->dataArr['captcha'])){
 			session_start();
 			$captchaStr = $_SESSION['tx_captcha_string'];
@@ -757,13 +767,13 @@ class user_feAdmin	{
 				$this->markerArray['###CAPTCHA###'] = $this->getCaptcha($errorMsg);
 			}
 		}
-		
+
 		if (isset($theField)) {
 			return $theField;
 		}
 	}
-	
-	
+
+
 	/**
 	 * Preforms user processing of input array - triggered right after the function call to evalValues() IF TypoScript property "evalFunc" was set.
 	 *
@@ -880,7 +890,7 @@ class user_feAdmin	{
 					// reloading the currentArr from the DB so that any DB changes in userFunc is taken into account
 					unset($this->currentArr);
 					$this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable,$newId);
-					
+
 					$this->saved=1;
 				}
 			break;
@@ -997,7 +1007,7 @@ class user_feAdmin	{
 				$content = $this->getPlainTemplate('###TEMPLATE_AUTH###');
 			}
 		} else {
-			$content.='Delete-option is not set in TypoScript';
+			$content ='Delete-option is not set in TypoScript';
 		}
 		return $content;
 	}
@@ -1023,12 +1033,12 @@ class user_feAdmin	{
 
 			$markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $this->dataArr, '', TRUE, 'FIELD_', $this->recInMarkersHSC);
 			if ($this->conf['create.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
-			
+
 			/* CAPTCHA */
 			if (!$this->markerArray['###CAPTCHA###']) {
 				$markerArray['###CAPTCHA###'] = $this->getCaptcha();
 			}
-			
+
 			$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
 			$content.= $this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($this->dataArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 		}
@@ -1078,7 +1088,7 @@ class user_feAdmin	{
 				$content = $this->getPlainTemplate('###TEMPLATE_AUTH###');
 			}
 		} else {
-			$content.='Edit-option is not set in TypoScript';
+			$content ='Edit-option is not set in TypoScript';
 		}
 		return $content;
 	}
@@ -1108,12 +1118,12 @@ class user_feAdmin	{
 
 		$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="FE['.$this->theTable.'][uid]" value="'.$currentArr['uid'].'" />';
 		if ($this->conf['edit.']['preview'] && !$this->previewLabel)	{$markerArray['###HIDDENFIELDS###'].= '<input type="hidden" name="preview" value="1" />';}
-		
+
 		/* CAPTCHA */
 		if (!$this->markerArray['###CAPTCHA###']) {
 			$markerArray['###CAPTCHA###'] = $this->getCaptcha();
 		}
-			
+
 		$content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
 		$content.=$this->cObj->getUpdateJS($this->modifyDataArrForFormUpdate($currentArr), $this->theTable.'_form',  'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 
@@ -1235,16 +1245,16 @@ class user_feAdmin	{
 		if ($this->conf['debug'])	debug('getPlainTemplate(): '.$key,1);
 		$templateCode = $this->cObj->getSubpart($this->templateCode, $key);
 		$this->setCObjects($templateCode,is_array($r)?$r:array());
-		
+
 		/* CAPTCHA */
 		if (!$this->markerArray['###CAPTCHA###']) {
 			$this->markerArray['###CAPTCHA###'] = $this->getCaptcha();
 		}
-		
+
 		$markerArray = is_array($r) ? $this->cObj->fillInMarkerArray($this->markerArray, $r, '', TRUE, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray;
-		
-		
-		
+
+
+
 		$content = $this->cObj->substituteMarkerArray( $templateCode, $markerArray);
 		return $content;
 	}
@@ -1338,7 +1348,8 @@ class user_feAdmin	{
 						}
 					}
 					if (strstr($templateCode,'###'.$specialPrefix.'PCE_'.$theKey.'###'))	{
-						$local_cObj =t3lib_div::makeInstance('tslib_cObj');
+						/** @var $local_cObj tslib_cObj */
+						$local_cObj = t3lib_div::makeInstance('tslib_cObj');
 						$local_cObj->start(count($currentArr)?$currentArr:$this->dataArr,$this->theTable);
 						$cObjCode = $local_cObj->cObjGetSingle($this->conf['cObjects.'][$theKey], $this->conf['cObjects.'][$theKey.'.'], 'cObjects.'.$theKey);
 
@@ -1356,7 +1367,7 @@ class user_feAdmin	{
 
 	/**
 	 * return the captcha code. Uses the TEMPLATE_CAPTCHA subpart to
-	 * 
+	 *
 	 * @param	string	$errorMsg: the captcha error message
 	 * @return	html	$captcha: the captcha code;
 	 */
@@ -1364,18 +1375,18 @@ class user_feAdmin	{
 		if (t3lib_extMgm::isLoaded('captcha')){
 			$templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
 			$markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="/'.t3lib_extMgm::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
-			
+
 			if (!empty($errorMsg)) {
 			$markerArrayCaptcha['###EVAL_ERROR_FIELD_captcha###'] = $errorMsg;
 			} else {
 				$templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
 			}
-			
+
 			$captcha = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
 		} else {
 			$captcha = '';
 		}
-		
+
 		return $captcha;
 	}
 
@@ -1410,17 +1421,17 @@ class user_feAdmin	{
 	function sendInfoMail()	{
 		if ($this->conf['infomail'] && $this->conf['email.']['field'])	{
 			$fetch = t3lib_div::_GP('fetch');
-			
+
 			if ($fetch) {
 				$this->evalValues();
 			}
-			
+
 			//check the failureMsg array, since evalValues is called
 			$captcha = TRUE;
 			if (is_array($this->failureMsg['captcha'])) {
 				$captcha = FALSE;
 			}
-			 
+
 			if ($fetch && $captcha)	{
 					// Getting infomail config.
 				$key= trim(t3lib_div::_GP('key'));
@@ -1433,19 +1444,25 @@ class user_feAdmin	{
 				if (!$config['dontLockPid'])	{
 					$pidLock='AND pid IN ('.$this->thePid.') ';
 				}
-				
+
 				//get PID recursively
 				if ($this->conf["pidRecursive"]) {
 					$pidLock = "AND pid IN (".tslib_cObj::getTreeList($this->thePid,100).$this->thePid.")";
 				}
-				
+
 					// Getting records
-				if (t3lib_div::testInt($fetch))	{
+				if (is_callable(array('t3lib_utility_Math','canBeInterpretedAsInteger'))) {
+					$fetchInt = t3lib_utility_Math::canBeInterpretedAsInteger($fetch);
+				} else {
+					$fetchInt = t3lib_div::testInt($fetch);
+				}
+
+				if ($fetchInt)	{
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,'uid',$fetch,$pidLock,'','','1');
 				} elseif ($fetch) {	// $this->conf['email.']['field'] must be a valid field in the table!
 					$DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable,$this->conf['email.']['field'],$fetch,$pidLock,'','','100');
 				}
-				
+
 					// Processing records
 				if (is_array($DBrows))	{
 					$recipient = $DBrows[0][$this->conf['email.']['field']];
@@ -1495,15 +1512,30 @@ class user_feAdmin	{
 		if ($userContent['all'])	$userContent['final'] .=$this->cObj->substituteSubpart($userContent['all'], '###SUB_RECORD###', $userContent['accum']);
 		if ($adminContent['all'])	$adminContent['final'].=$this->cObj->substituteSubpart($adminContent['all'], '###SUB_RECORD###', $adminContent['accum']);
 
-		if (t3lib_div::testInt($recipient))	{
+		if (is_callable(array('t3lib_utility_Math','canBeInterpretedAsInteger'))) {
+			$recipientID = t3lib_utility_Math::canBeInterpretedAsInteger($recipient);
+		} else {
+			$recipientID = t3lib_div::testInt($recipient);
+		}
+		if ($recipientID)	{
 			$fe_userRec = $GLOBALS['TSFE']->sys_page->getRawRecord('fe_users',$recipient);
-			$recipient=$fe_userRec['email'];
+			$recipient = $fe_userRec['email'];
 		}
 
 		$GLOBALS['TT']->setTSlogMessage('Template key: ###'.$key.'###, userContentLength: '.strlen($userContent['final']).', adminContentLength: '.strlen($adminContent['final']));
 
 		//TODO: add optional Swiftmailer see #13129
-		$this->sendMail($recipient, $this->conf['email.']['admin'], $userContent['final'], $adminContent['final']);
+		// send to admin, if set
+		if ($this->conf['email.']['admin'] && $adminContent['final']) {
+			$this->sendMail($this->conf['email.']['admin'], $adminContent['final']);
+		}
+
+		// send to recipient
+		if ($userContent['final']) {
+			$this->sendMail($recipient, $userContent['final']);
+		}
+
+
 		$GLOBALS['TT']->pull();
 	}
 
@@ -1512,52 +1544,44 @@ class user_feAdmin	{
 	 * As of TYPO3 v4.3 with autoloader, a check for $GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail'] has been included for backwards compatibility.
 	 *
 	 * @param	string		Recipient email address (or list)
-	 * @param	string		Possible "admin" email address. Will enable sending of admin emails if also $adminContent is provided
 	 * @param	string		Content for the regular email to user
-	 * @param	string		Content for the admin email to administrator
 	 * @return	void
 	 * @access private
 	 * @see compileMail(), sendInfoMail()
 	 */
-	function sendMail($recipient, $admin, $content='', $adminContent='')	{
-			// Admin mail:
-		if ($admin && $adminContent)	{
-			if (!$this->isHTMLContent($adminContent) || !$GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail']) {
-				$admMail = $this->cObj->sendNotifyEmail(
-									strip_tags($adminContent),
-									$admin,
-									'',
-									$this->conf['email.']['from'],
-									$this->conf['email.']['fromName'],
-									$recipient
-							);
-			} else {
-				$this->sendHTMLMail($adminContent,
-									$admin,
-									'',
-									$this->conf['email.']['from'],
-									$this->conf['email.']['fromName'],
-									$recipient
-							);
-			}
-		}
-			// user mail:
-		if (!$this->isHTMLContent($content) || !$GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail']) {
-			$this->cObj->sendNotifyEmail(
-								strip_tags($content),
-								$recipient,
-								'',			// ($admMail ? '' : $admin), 		// If the special administration mail was not found and send, the regular is...
-								$this->conf['email.']['from'],
-								$this->conf['email.']['fromName']
-						);
+	function sendMail($recipient, $content='' ) {
+		// Prepare the Mailer instance
+		// init the swiftmailer object
+		/** @var $mailer t3lib_mail_Message */
+		$mailer = t3lib_div::makeInstance('t3lib_mail_Message');
+		$mailer->setFrom(array($this->conf['email.']['from'] => $this->conf['email.']['fromName']));
+		$mailer->setReplyTo(array($this->conf['email.']['from'] => $this->conf['email.']['fromName']));
+		$mailer->setTo(array($recipient));
+
+		if ($this->isHTMLContent($content)) {
+			//set HTML Subject
+			$parts = preg_split('/<title>|<\/title>/i', $content, 3);
+			$subject = trim($parts[1]) ? trim($parts[1]) : 'TYPO3 FE Admin message';
+			$mailer->setSubject($subject);
+
+			//set HTML Content
+			$mailer->setBody($content, 'text/html');
+
 		} else {
-			$this->sendHTMLMail($content,
-								$recipient,
-								'',			// ($admMail ? '' : $admin), 		// If the special administration mail was not found and send, the regular is...
-								$this->conf['email.']['from'],
-								$this->conf['email.']['fromName']
-						);
+			// set subject from plain
+			$parts = explode(LF, trim($content), 2); // First line is subject
+			$subject = trim($parts[0]);
+			$plain_message = trim($parts[1]);
+			$mailer->setSubject($subject);
+
+			// set plain text
+			$mailer->setBody($plain_message, 'text/plain');
 		}
+
+		//TODO: do we really need the return value?
+		$sent = $mailer->send();
+		$failed = $mailer->getFailedRecipients();
+
 	}
 
 	/**
@@ -1572,79 +1596,6 @@ class user_feAdmin	{
 		$last = strtolower(substr($c,-7));
 		if ($first.$last=='<html></html>')	return 1;
 	}
-
-	/**
-	 * Sending HTML email, using same parameters as tslib_cObj::sendNotifyEmail()
-	 *
-	 * @param	string		The message content. If blank, no email is sent.
-	 * @param	string		Comma list of recipient email addresses
-	 * @param	string		IGNORE this parameter
-	 * @param	string		"From" email address
-	 * @param	string		Optional "From" name
-	 * @param	string		Optional "Reply-To" header email address.
-	 * @return	void
-	 * @access private
-	 * @see sendMail(), tslib_cObj::sendNotifyEmail()
-	 */
-	function sendHTMLMail($content,$recipient,$dummy,$fromEmail,$fromName,$replyTo='')	{
-		if (trim($recipient) && trim($content))	{
-			$parts = preg_spliti('<title>|</title>', $content, 3);
-			$subject = trim($parts[1]) ? trim($parts[1]) : 'TYPO3 FE Admin message';
-
-			$Typo3_htmlmail = t3lib_div::makeInstance('t3lib_htmlmail');
-			$Typo3_htmlmail->start();
-			$Typo3_htmlmail->useBase64();
-
-			$Typo3_htmlmail->subject = $subject;
-			$Typo3_htmlmail->from_email = $fromEmail;
-			$Typo3_htmlmail->from_name = $fromName;
-			$Typo3_htmlmail->replyto_email = $replyTo ? $replyTo : $fromEmail;
-			$Typo3_htmlmail->replyto_name = $replyTo ? '' : $fromName;
-			$Typo3_htmlmail->organisation = '';
-			$Typo3_htmlmail->priority = 3;
-
-				// HTML
-			$Typo3_htmlmail->theParts['html']['content'] = $content;	// Fetches the content of the page
-			$Typo3_htmlmail->theParts['html']['path'] = '';
-			$Typo3_htmlmail->extractMediaLinks();
-			$Typo3_htmlmail->extractHyperLinks();
-			$Typo3_htmlmail->fetchHTMLMedia();
-			$Typo3_htmlmail->substMediaNamesInHTML(0);	// 0 = relative
-			$Typo3_htmlmail->substHREFsInHTML();
-			$Typo3_htmlmail->setHTML($Typo3_htmlmail->encodeMsg($Typo3_htmlmail->theParts['html']['content']));
-
-				// PLAIN
-			$Typo3_htmlmail->addPlain('');
-
-				// SET Headers and Content
-			$Typo3_htmlmail->setHeaders();
-			$Typo3_htmlmail->setContent();
-			$Typo3_htmlmail->setRecipient($recipient);
-
-			$Typo3_htmlmail->sendtheMail();
-		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1735,8 +1686,8 @@ class user_feAdmin	{
 	/**
 	 * Creating hash string for setFixed. Much similar to authCode()
 	 *
-	 * @param	array		The data record
-	 * @param	string		List of fields to use
+	 * @param	array		$recCopy: The data record
+	 * @param	string		$fields: List of fields to use
 	 * @return	string		Hash string of $this->codeLength (if TypoScript "authcodeFields" was set)
 	 * @see setfixed(),authCode()
 	 */
