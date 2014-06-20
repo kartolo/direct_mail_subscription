@@ -454,7 +454,13 @@ class user_feAdmin	{
 							if (is_array($this->dataArr[$theField]))	{
 								$val = 0;
 								foreach ($this->dataArr[$theField] as $kk => $vv) {
-									$kk = t3lib_div::intInRange($kk,0);
+									if (t3lib_div::compat_version('6.0')) {
+										$kk = \TYPO3\CMS\Core\Utility\MathUtility::forceIntegerInRange($kk, 0);
+									}
+									else {
+										$kk = t3lib_div::intInRange($kk,0);
+									}
+
 									if ($kk<=30)	{
 										if ($vv)	{
 											$val|=pow(2,$kk);
