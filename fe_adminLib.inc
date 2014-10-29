@@ -1668,6 +1668,7 @@ class user_feAdmin	{
 		if (is_array($setfixed))	{
 			foreach ($setfixed as $theKey => $data) {
 				if (!strcmp($theKey,'DELETE'))	{
+					$data = $setfixed['DELETE.'] ? : array();
 					$recCopy = $r;
 					$string='&cmd=setfixed&sFK='.rawurlencode($theKey).'&rU='.$r['uid'];
 					$string.='&aC='.$this->setfixedHash($recCopy,$data['_FIELDLIST']);
