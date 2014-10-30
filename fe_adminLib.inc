@@ -24,6 +24,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
+
 /**
  * FE admin lib
  *
@@ -1465,7 +1466,8 @@ class user_feAdmin	{
 
 				//get PID recursively
 				if ($this->conf["pidRecursive"]) {
-					$pidLock = "AND pid IN (".tslib_cObj::getTreeList($this->thePid,100).$this->thePid.")";
+					$pidList = $this->cObj->getTreeList($this->thePid,100) . ',' . $this->thePid;
+					$pidLock = "AND pid IN (" . $pidList . ")";
 				}
 
 					// Getting records
