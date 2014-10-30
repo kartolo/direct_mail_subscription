@@ -218,7 +218,7 @@ class user_feAdmin	{
 		$this->markerArray['###REC_UID###'] = $this->recUid;
 		$this->markerArray['###AUTH_CODE###'] = $this->authCode;
 		$this->markerArray['###THIS_ID###'] = $GLOBALS['TSFE']->id;
-		$this->markerArray['###THIS_URL###'] = htmlspecialchars(t3lib_div::getIndpEnv('TYPO3_REQUEST_DIR'));
+		$this->markerArray['###THIS_URL###'] = htmlspecialchars(t3lib_div::getIndpEnv('TYPO3_SITE_URL'));
 		$this->markerArray['###HIDDENFIELDS###'] =
 			($this->cmd?'<input type="hidden" name="cmd" value="'.htmlspecialchars($this->cmd).'" />':'').
 			($this->authCode?'<input type="hidden" name="aC" value="'.htmlspecialchars($this->authCode).'" />':'').
