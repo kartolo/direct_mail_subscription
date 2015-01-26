@@ -297,6 +297,7 @@ class user_feAdmin	{
 		if ($this->saved) {
 				// Clear page cache
 			$this->clearCacheIfSet();
+			$this->setNoCacheHeader();
 
 				// Displaying the page here that says, the record has been saved. You're able to include the saved values by markers.
 			switch($this->cmd)	{
@@ -1191,6 +1192,8 @@ class user_feAdmin	{
 					);
 						// Clearing cache if set:
 					$this->clearCacheIfSet();
+					$this->setNoCacheHeader();
+
 				} else $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_FAILED###');
 			} else $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_FAILED###');
 		}
@@ -1760,6 +1763,21 @@ class user_feAdmin	{
 			$cc_pidList = $GLOBALS['TYPO3_DB']->cleanIntList($this->conf['clearCacheOfPages']);
 			$GLOBALS['TSFE']->clearPageCacheContent_pidList($cc_pidList);
 		}
+	}
+
+	/**
+	 * Set http header, so content won't be cached or indexed by search engine
+	 *
+	 * @return void
+	 */
+	protected function setNoCacheHeader() {
+		//send no-cache header
+		// HTTP 1.1
+		header('Cache-Control: no-cache, must-revalidate');
+		// HTTP 1.0
+		header('Pragma: no-cache');
+		// robots
+		header('X-Robots-Tag: noindex, nofollow');
 	}
 
 	/**
