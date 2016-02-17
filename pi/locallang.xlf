@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+	<file source-language="en" datatype="plaintext" original="messages" date="2016-02-16T22:11:43Z">
+		<header>
+			<description>Language labels for extension 'direct_mail_subscription'</description>
+			<authorName>Ivan Kartolo</authorName>
+			<authorEmail>ivan.kartolo@gmail.com</authorEmail>
+			<generator>LFEditor</generator>
+		</header>
+		<body>
+		<trans-unit id="tt_addressGenderF">
+			<source>Mrs.</source>
+		</trans-unit>
+		<trans-unit id="tt_addressGenderM">
+			<source>Mr.</source>
+		</trans-unit>
+		</body>
+	</file>
+</xliff>

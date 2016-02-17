@@ -55,8 +55,9 @@ plugin.feadmin.dmailsubscription {
 	// Edit setup
 	edit = 1
 	edit {
-		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html, captcha
-		required = gender, name, email, captcha
+		// add captcha, if you use captcha
+		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html
+		required = gender, name, email
 		evalValues.email = uniqueLocal, email
 		userFunc_afterSave = user_dmailsubscribe->saveRecord
 	}
