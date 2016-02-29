@@ -1,0 +1,33 @@
+{
+  "name": "directmailteam/direct-mail-subscription",
+  "type": "typo3-cms-extension",
+  "description": "Simple subscription form, which works together with TYPO3 direct_mail extension",
+  "keywords": [
+    "TYPO3",
+    "extension",
+    "directmail",
+    "newsletter",
+    "subscription"
+  ],
+  "homepage": "https://forge.typo3.org/projects/extension-direct_mail_subscription",
+  "authors": [
+    {
+      "name": "Ivan Kartolo",
+      "role": "Developer"
+    }
+  ],
+  "license": [
+    "GPL-2.0+"
+  ],
+  "support": {
+    "issues": "https://forge.typo3.org/projects/extension-direct_mail_subscription"
+  },
+  "require": {
+    "typo3/cms-core": ">=6.2,<8.0",
+    "typo3-ter/tt-address": ">=2.3"
+  },
+  "replace": {
+    "direct_mail_subscription": "self.version",
+    "typo3-ter/direct_mail_subscription": "self.version"
+  }
+}
