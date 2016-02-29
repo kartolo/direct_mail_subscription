@@ -1,0 +1,37 @@
+{
+  "name": "directmailteam/direct-mail-subscription",
+  "type": "typo3-cms-extension",
+  "description": "Adds a plugin for subscription to direct mail newsletters (collecting subscriptions in the tt_address table).",
+  "keywords": [
+    "TYPO3",
+    "extension",
+    "directmail",
+    "newsletter"
+  ],
+  "homepage": "https://github.com/kartolo/direct_mail_subscription",
+  "authors": [
+    {
+      "name": "Ivan Kartolo",
+      "role": "Developer"
+    }
+  ],
+  "license": [
+    "GPL-2.0+"
+  ],
+  "support": {
+    "issues": "https://forge.typo3.org/projects/extension-direct_mail_subscription"
+  },
+  "require": {
+    "typo3/cms-core": ">=6.2,<8.0",
+    "typo3-ter/tt_address": ">=2.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "DirectMailTeam\\DirectMailSubscription\\": "Classes"
+    }
+  },
+  "replace": {
+    "direct_mail_subscription": "self.version",
+    "typo3-ter/direct_mail_subscription": "self.version"
+  }
+}
