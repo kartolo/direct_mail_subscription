@@ -276,7 +276,15 @@ class user_feAdmin
             $this->deleteRecord();
         }
             // If incoming data is seen...
-        if (is_array($this->dataArr) && count(ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha'))) {
+        if (is_array($this->dataArr)){
+            if (GeneralUtility::compat_version('7.0')) {
+                $countDataArray = ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
+            } else {
+                $countDataArray = GeneralUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
+            }
+        }
+
+        if (is_array($this->dataArr) && count($countDataArray)) {
             // Evaluation of data:
             $this->parseValues();
             $this->overrideValues();
@@ -1514,8 +1522,13 @@ class user_feAdmin
 
                 //get PID recursively
                 if ($this->conf['pidRecursive']) {
-                    $pidList = $this->cObj->getTreeList($this->thePid, 100) . ',' . $this->thePid;
-                    $pidLock = 'AND pid IN (' . $pidList . ')';
+                    $recursivePidList = $this->cObj->getTreeList($this->thePid, 100);
+                    if ($recursivePidList) {
+                        $pidList = $recursivePidList . ',' . $this->thePid;
+                    } else {
+                        $pidList = $this->thePid;
+                    }
+                    $pidLock = 'AND pid IN (' .  $pidList . ')';
                 }
 
                     // Getting records
