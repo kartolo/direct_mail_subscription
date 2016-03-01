@@ -28,7 +28,8 @@
   "autoload": {
     "psr-4": {
       "DirectMailTeam\\DirectMailSubscription\\": "Classes"
-    }
+    },
+    "files": ["pi/class.dmailsubscribe.php"]
   },
   "replace": {
     "direct_mail_subscription": "self.version",
