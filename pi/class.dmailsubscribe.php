@@ -278,9 +278,9 @@ class user_dmailsubscribe
             $languageFactory = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Localization\\LocalizationFactory');
 
                 // Read the strings in the required charset (since TYPO3 4.2)
-            $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->LLkey, $GLOBALS['TSFE']->renderCharset);
+            $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->LLkey, $GLOBALS['TSFE']->renderCharset, 0);
             if ($this->altLLkey) {
-                $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->altLLkey);
+                $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->altLLkey, '', 0);
             }
 
             // Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
