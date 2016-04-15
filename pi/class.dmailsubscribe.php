@@ -275,7 +275,7 @@ class user_dmailsubscribe
         if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
             $basePath = 'EXT:'.$this->extKey.'/'.dirname($this->scriptRelPath).'/locallang.xml';
 
-            $languageFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Localization\LocalizationFactory::class);
+            $languageFactory = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Localization\\LocalizationFactory');
 
                 // Read the strings in the required charset (since TYPO3 4.2)
             $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->LLkey, $GLOBALS['TSFE']->renderCharset);
