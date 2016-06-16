@@ -273,7 +273,7 @@ class user_dmailsubscribe
     public function pi_loadLL()
     {
         if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
-            $basePath = 'EXT:'.$this->extKey.'/'.dirname($this->scriptRelPath).'/locallang.xml';
+            $basePath = 'EXT:'.$this->extKey.'/'.dirname($this->scriptRelPath).'/locallang.xlf';
 
             $languageFactory = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Localization\\LocalizationFactory');
 
