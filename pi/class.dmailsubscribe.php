@@ -273,14 +273,14 @@ class user_dmailsubscribe
     public function pi_loadLL()
     {
         if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath) {
-            $basePath = 'EXT:'.$this->extKey.'/'.dirname($this->scriptRelPath).'/locallang.xml';
+            $basePath = 'EXT:'.$this->extKey.'/'.dirname($this->scriptRelPath).'/locallang.xlf';
 
-            $languageFactory = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Localization\LocalizationFactory::class);
+            $languageFactory = GeneralUtility::makeInstance('TYPO3\\CMS\\Core\\Localization\\LocalizationFactory');
 
                 // Read the strings in the required charset (since TYPO3 4.2)
-            $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->LLkey, $GLOBALS['TSFE']->renderCharset);
+            $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->LLkey, $GLOBALS['TSFE']->renderCharset, 0);
             if ($this->altLLkey) {
-                $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->altLLkey);
+                $this->LOCAL_LANG = $languageFactory->getParsedData($basePath, $this->altLLkey, '', 0);
             }
 
             // Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):

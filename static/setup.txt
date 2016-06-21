@@ -1,4 +1,3 @@
-includeLibs.directmailsubscribe = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php
 plugin.feadmin.dmailsubscription >
 plugin.feadmin.dmailsubscription = USER_INT
 plugin.feadmin.dmailsubscription {
@@ -8,9 +7,10 @@ plugin.feadmin.dmailsubscription {
 	templateFile ={$plugin.feadmin.dmailsubscription.file.templateFile}
 
 	cObjects {
-		CATLIST = USER
-		CATLIST.userFunc = user_dmailsubscribe->makeCheckboxes
+		CATLIST = USER_INT
 		CATLIST {
+			includeLibs = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php
+			userFunc = user_dmailsubscribe->makeCheckboxes
 			templateFile = {$plugin.feadmin.dmailsubscription.file.templateFile}
 			pid = {$plugin.feadmin.dmailsubscription.pid}
 			hideNonTranslatedCategories = 0

@@ -207,6 +207,8 @@ class user_feAdmin
             $linkConf['additionalParams'] = $this->conf['addParams'];
         }
 
+        $linkConf['forceAbsoluteUrl'] = '1';
+
         $formUrl = $this->cObj->typoLink_URL($linkConf);
 
         if (!strstr($formUrl, '?')) {
@@ -226,7 +228,8 @@ class user_feAdmin
         $this->markerArray['###REC_UID###'] = $this->recUid;
         $this->markerArray['###AUTH_CODE###'] = $this->authCode;
         $this->markerArray['###THIS_ID###'] = $GLOBALS['TSFE']->id;
-        $this->markerArray['###THIS_URL###'] = htmlspecialchars(GeneralUtility::getIndpEnv('TYPO3_SITE_URL'));
+        // emtpying this marker, since the FORM_URL is absolute URL => typolink with forceAbsoluteUrl
+        $this->markerArray['###THIS_URL###'] = '';
         $this->markerArray['###HIDDENFIELDS###'] = ($this->cmd ? '<input type="hidden" name="cmd" value="'.htmlspecialchars($this->cmd).'" />' : '').
             ($this->authCode ? '<input type="hidden" name="aC" value="'.htmlspecialchars($this->authCode).'" />' : '').
             ($this->backURL ? '<input type="hidden" name="backURL" value="'.htmlspecialchars($this->backURL).'" />' : '');
@@ -273,7 +276,15 @@ class user_feAdmin
             $this->deleteRecord();
         }
             // If incoming data is seen...
-        if (is_array($this->dataArr) && count(ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha'))) {
+        if (is_array($this->dataArr)){
+            if (GeneralUtility::compat_version('7.0')) {
+                $countDataArray = ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
+            } else {
+                $countDataArray = GeneralUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
+            }
+        }
+
+        if (is_array($this->dataArr) && count($countDataArray)) {
             // Evaluation of data:
             $this->parseValues();
             $this->overrideValues();
@@ -1511,8 +1522,13 @@ class user_feAdmin
 
                 //get PID recursively
                 if ($this->conf['pidRecursive']) {
-                    $pidList = $this->cObj->getTreeList($this->thePid, 100) . ',' . $this->thePid;
-                    $pidLock = 'AND pid IN (' . $pidList . ')';
+                    $recursivePidList = $this->cObj->getTreeList($this->thePid, 100);
+                    if ($recursivePidList) {
+                        $pidList = $recursivePidList . ',' . $this->thePid;
+                    } else {
+                        $pidList = $this->thePid;
+                    }
+                    $pidLock = 'AND pid IN (' .  $pidList . ')';
                 }
 
                     // Getting records
