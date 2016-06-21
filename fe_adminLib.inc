@@ -841,7 +841,7 @@ class user_feAdmin
         if ($confVal) {
             $funcConf = $confArr;
             $funcConf['parentObj'] = $this;
-            $passVar = $GLOBALS['TSFE']->cObj->callUserFunction($confVal, $funcConf, $passVar);
+            $passVar = GeneralUtility::callUserFunction($confVal, $passVar, $funcConf);
         }
 
         return $passVar;
