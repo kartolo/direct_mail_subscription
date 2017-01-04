@@ -59,13 +59,13 @@ plugin.feadmin.dmailsubscription {
 		fields = gender, name, email, module_sys_dmail_category, module_sys_dmail_html
 		required = gender, name, email
 		evalValues.email = uniqueLocal, email
-		userFunc_afterSave = user_dmailsubscribe->saveRecord
+		userFunc_afterSave = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php:user_dmailsubscribe->saveRecord
 	}
 
 	// Create setup
 	create = 1
 	create {
-		userFunc_afterSave = user_dmailsubscribe->saveRecord
+		userFunc_afterSave = EXT:direct_mail_subscription/pi/class.dmailsubscribe.php:user_dmailsubscribe->saveRecord
 		preview = 0
 		// add captcha, if you use captcha
 		fields = gender, name, hidden, email, module_sys_dmail_category, module_sys_dmail_html
