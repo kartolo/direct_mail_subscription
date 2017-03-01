@@ -70,7 +70,7 @@ class user_dmailsubscribe
     /**
      * Constructor.
      */
-    public function user_dmailsubscribe()
+    public function __construct()
     {
         $this->cObj = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
         $this->conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['feadmin.']['dmailsubscription.'];
@@ -86,6 +86,14 @@ class user_dmailsubscribe
         }
         $this->pi_loadLL();
     }
+
+    /**
+     * keep old constructor for backwards compatibility
+     */
+    public function user_dmailsubscribe()
+    {
+        self::__construct();
+	}
 
     /**
      * Userfunc called per TS to create categories check boxes.
