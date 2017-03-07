@@ -70,7 +70,7 @@ class user_dmailsubscribe
     /**
      * Constructor.
      */
-    public function user_dmailsubscribe()
+    public function __construct()
     {
         $this->cObj = GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\ContentObject\\ContentObjectRenderer');
         $this->conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['feadmin.']['dmailsubscription.'];
