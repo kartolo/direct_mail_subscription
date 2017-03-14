@@ -30,6 +30,8 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 
+require_once ExtensionManagementUtility::extPath('direct_mail_subscription') . 'pi/class.dmailsubscribe.php';
+
 /**
  * FE admin lib.
  *
