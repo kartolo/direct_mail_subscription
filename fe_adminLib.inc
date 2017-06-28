@@ -788,7 +788,7 @@ class user_feAdmin
                 $result = \ThinkopenAt\Captcha\Utility::checkCaptcha($this->dataArr['captcha']);
             } else {
                 session_start();
-                $result = !empty($_SESSION['tx_captcha_string']) && ($this->dataArr['captcha'] !== $_SESSION['tx_captcha_string']);
+                $result = !empty($_SESSION['tx_captcha_string']) && ($this->dataArr['captcha'] === $_SESSION['tx_captcha_string']);
                 $_SESSION['tx_captcha_string'] = '';
             }
             if (!$result) {
