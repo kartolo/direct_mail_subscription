@@ -1060,7 +1060,7 @@ class user_feAdmin
 	/*]]>*/
 </script>
 ';
-        $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($GLOBALS['TSFE']->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
+        $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($GLOBALS['TSFE']->absRefPrefix. ExtensionManagementUtility::siteRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
 
         return $JSPart;
     }
