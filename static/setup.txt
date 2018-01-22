@@ -1,8 +1,7 @@
 plugin.feadmin.dmailsubscription >
 plugin.feadmin.dmailsubscription = USER_INT
 plugin.feadmin.dmailsubscription {
-	userFunc = user_feAdmin->init
-	includeLibs = EXT:direct_mail_subscription/fe_adminLib.inc
+	userFunc = DirectMailTeam\DirectMailSubscription\user_feAdmin->init
 
 	templateFile ={$plugin.feadmin.dmailsubscription.file.templateFile}
 
@@ -86,7 +85,6 @@ plugin.feadmin.dmailsubscription {
 	evalErrors.captcha.captcha = Captcha code is not correct.
 
 	parseValues.module_sys_dmail_category = checkArray,setEmptyIfAbsent
-	parseValues.module_sys_dmail_html = setEmptyIfAbsent
 
 	pid = {$plugin.feadmin.dmailsubscription.pid}
 	//always search recursively

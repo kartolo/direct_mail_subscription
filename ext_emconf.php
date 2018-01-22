@@ -35,7 +35,7 @@ $EM_CONF[$_EXTKEY] = array(
     'constraints' => array(
         'depends' => array(
             'tt_address' => '',
-            'typo3' => '6.2.0-7.6.99',
+            'typo3' => '7.0.0-8.99.99',
         ),
         'conflicts' => array(
         ),
@@ -43,6 +43,7 @@ $EM_CONF[$_EXTKEY] = array(
         ),
     ),
     'autoload' => array(
+     'psr-4' => array('DirectMailTeam\\DirectMailSubscription\\' => 'Classes'),
       'classmap' => array(
         'pi/class.dmailsubscribe.php',
       )

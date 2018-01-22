@@ -1,4 +1,6 @@
 <?php
+namespace DirectMailTeam\DirectMailSubscription;
+
 /***************************************************************
 *  Copyright notice
 *
@@ -24,6 +26,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 ***************************************************************/
+use TYPO3\CMS\Core\TimeTracker\TimeTracker;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -147,7 +150,9 @@ class user_feAdmin
         $this->conf = $conf;
 
             // template file is fetched.
-        $this->templateCode = $this->conf['templateContent'] ? $this->conf['templateContent'] : $this->cObj->fileResource($this->conf['templateFile']);
+        $this->templateCode = $this->conf['templateContent'] ?
+            $this->conf['templateContent'] :
+            file_get_contents(GeneralUtility::getFileAbsFileName($this->conf['templateFile']));
 
             // Getting the cmd var
         $this->cmd = (string) GeneralUtility::_GP('cmd');
@@ -177,12 +182,16 @@ class user_feAdmin
             // link configuration
         $linkConf = is_array($this->conf['formurl.']) ? $this->conf['formurl.'] : array();
             // pid
-        $this->thePid = intval($this->conf['pid']) ? intval($this->conf['pid']) : $GLOBALS['TSFE']->id;
+        $this->thePid = intval($this->conf['pid']) ? intval($this->conf['pid']) : $this->getTypoScriptFrontendController()->id;
             //
-        $this->codeLength = intval($this->conf['authcodeFields.']['codeLength']) ? intval($this->conf['authcodeFields.']['codeLength']) : 8;
+        $this->codeLength = intval($this->conf['authcodeFields.']['codeLength']) ?
+            intval($this->conf['authcodeFields.']['codeLength']) : 8;
 
             // Setting the hardcoded lists of fields allowed for editing and creation.
-        $this->fieldList = implode(',', GeneralUtility::trimExplode(',', $GLOBALS['TCA'][$this->theTable]['feInterface']['fe_admin_fieldList'], 1));
+        $this->fieldList = implode(
+            ',',
+            GeneralUtility::trimExplode(',', $GLOBALS['TCA'][$this->theTable]['feInterface']['fe_admin_fieldList'], 1)
+        );
 
             // globally substituted markers, fonts and colors.
         $splitMark = md5(microtime());
@@ -200,7 +209,7 @@ class user_feAdmin
             $linkConf['no_cache'] = 1;
         }
         if (!$linkConf['parameter']) {
-            $linkConf['parameter'] = $GLOBALS['TSFE']->id;
+            $linkConf['parameter'] = $this->getTypoScriptFrontendController()->id;
         }
         if (!$linkConf['additionalParams']) {
             // needed for backwards compatibility
@@ -227,10 +236,11 @@ class user_feAdmin
         $this->markerArray['###THE_PID###'] = $this->thePid;
         $this->markerArray['###REC_UID###'] = $this->recUid;
         $this->markerArray['###AUTH_CODE###'] = $this->authCode;
-        $this->markerArray['###THIS_ID###'] = $GLOBALS['TSFE']->id;
+        $this->markerArray['###THIS_ID###'] = $this->getTypoScriptFrontendController()->id;
         // emtpying this marker, since the FORM_URL is absolute URL => typolink with forceAbsoluteUrl
         $this->markerArray['###THIS_URL###'] = '';
-        $this->markerArray['###HIDDENFIELDS###'] = ($this->cmd ? '<input type="hidden" name="cmd" value="'.htmlspecialchars($this->cmd).'" />' : '').
+        $this->markerArray['###HIDDENFIELDS###'] =
+            ($this->cmd ? '<input type="hidden" name="cmd" value="'.htmlspecialchars($this->cmd).'" />' : '') .
             ($this->authCode ? '<input type="hidden" name="aC" value="'.htmlspecialchars($this->authCode).'" />' : '').
             ($this->backURL ? '<input type="hidden" name="backURL" value="'.htmlspecialchars($this->backURL).'" />' : '');
 
@@ -243,7 +253,8 @@ class user_feAdmin
                 $this->cmdKey = 'create';
         }
 
-            // Setting requiredArr to the fields in 'required' intersected field the total field list in order to remove invalid fields.
+        // Setting requiredArr to the fields in 'required' intersected field
+        // the total field list in order to remove invalid fields.
         $this->requiredArr = array_intersect(
             GeneralUtility::trimExplode(',', $this->conf[$this->cmdKey.'.']['required'], 1),
             GeneralUtility::trimExplode(',', $this->conf[$this->cmdKey.'.']['fields'], 1)
@@ -276,12 +287,8 @@ class user_feAdmin
             $this->deleteRecord();
         }
             // If incoming data is seen...
-        if (is_array($this->dataArr)){
-            if (GeneralUtility::compat_version('7.0')) {
-                $countDataArray = ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
-            } else {
-                $countDataArray = GeneralUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
-            }
+        if (is_array($this->dataArr)) {
+            $countDataArray = ArrayUtility::removeArrayEntryByValue(array_keys($this->dataArr), 'captcha');
         }
 
         if (is_array($this->dataArr) && count($countDataArray)) {
@@ -325,7 +332,8 @@ class user_feAdmin
             $this->clearCacheIfSet();
             $this->setNoCacheHeader();
 
-                // Displaying the page here that says, the record has been saved. You're able to include the saved values by markers.
+            // Displaying the page here that says, the record has been saved.
+            // You're able to include the saved values by markers.
             switch ($this->cmd) {
                 case 'delete':
                     $key = 'DELETE';
@@ -339,7 +347,14 @@ class user_feAdmin
                 // Output message
             $templateCode = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_'.$key.'_SAVED###');
             $this->setCObjects($templateCode, $this->currentArr);
-            $markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $this->currentArr, '', true, 'FIELD_', $this->recInMarkersHSC);
+            $markerArray = $this->cObj->fillInMarkerArray(
+                $this->markerArray,
+                $this->currentArr,
+                '',
+                true,
+                'FIELD_',
+                $this->recInMarkersHSC
+            );
             $content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
 
                 // email message:
@@ -414,7 +429,8 @@ class user_feAdmin
             foreach ($this->conf['parseValues.'] as $theField => $theValue) {
                 $listOfCommands = GeneralUtility::trimExplode(',', $theValue, 1);
                 foreach ($listOfCommands as $cmd) {
-                    // Point is to enable parameters after each command enclosed in brackets [..]. These will be in position 1 in the array.
+                    // Point is to enable parameters after each command enclosed in brackets [..].
+                    // These will be in position 1 in the array.
                     $cmdParts = preg_split('/\[|\]/', $cmd);
                     $theCmd = trim($cmdParts[0]);
                     switch ($theCmd) {
@@ -506,7 +522,8 @@ class user_feAdmin
      * NOTICE: for now files can be handled only on creation of records.
      * But a more advanced feature is that PREVIEW of files is handled.
      *
-     * @param array  $cmdParts Array with cmd-parts (from parseValues()). This will for example contain information about allowed file extensions and max size of uploaded files.
+     * @param array  $cmdParts Array with cmd-parts (from parseValues()).
+     * This will for example contain information about allowed file extensions and max size of uploaded files.
      * @param string $theField The fieldname with the files.
      *
      * @see parseValues()
@@ -588,24 +605,32 @@ class user_feAdmin
             // Copy the files in the resulting array to the proper positions based on preview/non-preview.
         $fileNameList = array();
         foreach ($finalFilesArr as $infoArr) {
-            if ($this->isPreview()) {        // If the form is a preview form (and data is therefore not going into the database...) do this.
+            if ($this->isPreview()) {
+                // If the form is a preview form (and data is therefore not going into the database...) do this.
                 $this->createFileFuncObj();
                 $fI = pathinfo($infoArr['name']);
-                $tmpFilename = $this->theTable . '_' . GeneralUtility::shortmd5(uniqid($infoArr['name'])) . '.' . $fI['extension'];
-                $theDestFile = $this->fileFunc->getUniqueName($this->fileFunc->cleanFileName($tmpFilename), PATH_site . 'typo3temp/');
+                $tmpFilename = $this->theTable . '_' .
+                    GeneralUtility::shortmd5(uniqid($infoArr['name'])) . '.' . $fI['extension'];
+                $theDestFile = $this->fileFunc->getUniqueName(
+                    $this->fileFunc->cleanFileName($tmpFilename),
+                    PATH_site . 'typo3temp/'
+                );
                 GeneralUtility::upload_copy_move($infoArr['tmp_name'], $theDestFile);
                     // Setting the filename in the list
                 $fI2 = pathinfo($theDestFile);
                 $fileNameList[] = $fI2['basename'].'|'.$infoArr['name'];
             } else {
                 $this->createFileFuncObj();
-                $GLOBALS['TSFE']->includeTCA();
+                $this->getTypoScriptFrontendController()->includeTCA();
                 GeneralUtility::loadTCA($this->theTable);
                 if (is_array($GLOBALS['TCA'][$this->theTable]['columns'][$theField])) {
                     $uploadPath = $GLOBALS['TCA'][$this->theTable]['columns'][$theField]['config']['uploadfolder'];
                 }
                 if ($uploadPath) {
-                    $theDestFile = $this->fileFunc->getUniqueName($this->fileFunc->cleanFileName($infoArr['name']), PATH_site . $uploadPath);
+                    $theDestFile = $this->fileFunc->getUniqueName(
+                        $this->fileFunc->cleanFileName($infoArr['name']),
+                        PATH_site . $uploadPath
+                    );
                     GeneralUtility::upload_copy_move($infoArr['tmp_name'], $theDestFile);
                         // Setting the filename in the list
                     $fI2 = pathinfo($theDestFile);
@@ -634,7 +659,8 @@ class user_feAdmin
     }
 
     /**
-     * Called if there is no input array in $this->dataArr. Then this function sets the default values configured in TypoScript.
+     * Called if there is no input array in $this->dataArr.
+     * Then this function sets the default values configured in TypoScript.
      *
      * @see init()
      */
@@ -651,7 +677,8 @@ class user_feAdmin
     /**
      * This will evaluate the input values from $this->dataArr to see if they conforms with the requirements configured in TypoScript per field.
      * For example this could be checking if a field contains a valid email address, a unique value, a value within a certain range etc.
-     * It will populate arrays like $this->failure and $this->failureMsg with error messages (which can later be displayed in the template). Mostly it does NOT alter $this->dataArr (such parsing of values was done by parseValues())
+     * It will populate arrays like $this->failure and $this->failureMsg with error messages (which can later be displayed in the template).
+     * Mostly it does NOT alter $this->dataArr (such parsing of values was done by parseValues())
      * Works based on configuration in TypoScript key [create/edit].evalValues.
      *
      * @see init(), parseValues()
@@ -666,15 +693,17 @@ class user_feAdmin
             }
         }
 
-        // Evaluate: This evaluates for more advanced things than 'required' does. But it returns the same error code, so you must let the required-message tell, if further evaluation has failed!
+        // Evaluate: This evaluates for more advanced things than 'required' does.
+        // But it returns the same error code, so you must let the required-message tell, if further evaluation has failed!
         $recExist = 0;
         if (is_array($this->conf[$this->cmdKey.'.']['evalValues.'])) {
             switch ($this->cmd) {
                 case 'edit':
-                    if (isset($this->dataArr['pid'])) {            // This may be tricked if the input has the pid-field set but the edit-field list does NOT allow the pid to be edited. Then the pid may be false.
+                    if (isset($this->dataArr['pid'])) {
+                        // This may be tricked if the input has the pid-field set but the edit-field list does NOT allow the pid to be edited. Then the pid may be false.
                         $recordTestPid = intval($this->dataArr['pid']);
                     } else {
-                        $tempRecArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $this->dataArr['uid']);
+                        $tempRecArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $this->dataArr['uid']);
                         $recordTestPid = intval($tempRecArr['pid']);
                     }
                     $recExist = 1;
@@ -688,20 +717,25 @@ class user_feAdmin
             foreach ($this->conf[$this->cmdKey.'.']['evalValues.'] as $theField => $theValue) {
                 $listOfCommands = GeneralUtility::trimExplode(',', $theValue, 1);
                 foreach ($listOfCommands as $cmd) {
-                    $cmdParts = preg_split('/\[|\]/', $cmd);    // Point is to enable parameters after each command enclosed in brackets [..]. These will be in position 1 in the array.
+                    // Point is to enable parameters after each command enclosed in brackets [..]. These will be in position 1 in the array.
+                    $cmdParts = preg_split('/\[|\]/', $cmd);
                     $theCmd = trim($cmdParts[0]);
                     switch ($theCmd) {
                         case 'uniqueGlobal':
-                            if ($DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable, $theField, $this->dataArr[$theField], '', '', '', '1')) {
-                                if (!$recExist || $DBrows[0]['uid'] != $this->dataArr['uid']) {    // Only issue an error if the record is not existing (if new...) and if the record with the false value selected was not our self.
+                            $DBrows = $this->getTypoScriptFrontendController()->sys_page->getRecordsByField($this->theTable, $theField, $this->dataArr[$theField], '', '', '', '1');
+                            if ($DBrows) {
+                                if (!$recExist || $DBrows[0]['uid'] != $this->dataArr['uid']) {
+                                    // Only issue an error if the record is not existing (if new...) and if the record with the false value selected was not our self.
                                     $tempArr[] = $theField;
                                     $this->failureMsg[$theField][] = $this->getFailure($theField, $theCmd, 'The value existed already. Enter a new value.');
                                 }
                             }
                             break;
                         case 'uniqueLocal':
-                            if ($DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable, $theField, $this->dataArr[$theField], 'AND pid IN ('.$recordTestPid.')', '', '', '1')) {
-                                if (!$recExist || $DBrows[0]['uid'] != $this->dataArr['uid']) {    // Only issue an error if the record is not existing (if new...) and if the record with the false value selected was not our self.
+                            $DBrows = $this->getTypoScriptFrontendController()->sys_page->getRecordsByField($this->theTable, $theField, $this->dataArr[$theField], 'AND pid IN ('.$recordTestPid.')', '', '', '1');
+                            if ($DBrows) {
+                                if (!$recExist || $DBrows[0]['uid'] != $this->dataArr['uid']) {
+                                    // Only issue an error if the record is not existing (if new...) and if the record with the false value selected was not our self.
                                     $tempArr[] = $theField;
                                     $this->failureMsg[$theField][] = $this->getFailure($theField, $theCmd, 'The value existed already. Enter a new value.');
                                 }
@@ -806,7 +840,8 @@ class user_feAdmin
      * Preforms user processing of input array -
      * triggered right after the function call to evalValues() IF TypoScript property "evalFunc" was set.
      *
-     * @param string $mConfKeyKey Pointing to the property in TypoScript holding the configuration for this processing (here: "evalFunc.*"). Well: at least its safe to say that "parentObj" in this array passed to the function is a reference back to this object.
+     * @param string $mConfKeyKey Pointing to the property in TypoScript holding the configuration for this processing (here: "evalFunc.*").
+     * Well: at least its safe to say that "parentObj" in this array passed to the function is a reference back to this object.
      * @param array $passVar The $this->dataArr passed for processing
      *
      * @return array The processed $passVar ($this->dataArr)
@@ -818,7 +853,7 @@ class user_feAdmin
         if ($this->conf[$mConfKey]) {
             $funcConf = $this->conf[$mConfKey.'.'];
             $funcConf['parentObj'] = $this;
-            $passVar = $GLOBALS['TSFE']->cObj->callUserFunction($this->conf[$mConfKey], $funcConf, $passVar);
+            $passVar = $this->getTypoScriptFrontendController()->cObj->callUserFunction($this->conf[$mConfKey], $funcConf, $passVar);
         }
 
         return $passVar;
@@ -864,14 +899,14 @@ class user_feAdmin
             case 'edit':
                 $theUid = $this->dataArr['uid'];
                 // Fetches the original record to check permissions
-                $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $theUid);
-                if ($this->conf['edit'] && ($GLOBALS['TSFE']->loginUser || $this->aCAuth($origArr))) {
+                $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
+                if ($this->conf['edit'] && ($this->getTypoScriptFrontendController()->loginUser || $this->aCAuth($origArr))) {
                     // Must be logged in in order to edit  (OR be validated by email)
                     $newFieldList = implode(',', array_intersect(explode(',', $this->fieldList), GeneralUtility::trimExplode(',', $this->conf['edit.']['fields'], 1)));
-                    if ($this->aCAuth($origArr) || $this->cObj->DBmayFEUserEdit($this->theTable, $origArr, $GLOBALS['TSFE']->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
+                    if ($this->aCAuth($origArr) || $this->DBmayFEUserEdit($this->theTable, $origArr, $this->getTypoScriptFrontendController()->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
 
-                        $this->cObj->DBgetUpdate($this->theTable, $theUid, $this->dataArr, $newFieldList, true);
-                        $this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $theUid);
+                        $this->DBgetUpdate($this->theTable, $theUid, $this->dataArr, $newFieldList, true);
+                        $this->currentArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
                         $this->userProcess_alt($this->conf['edit.']['userFunc_afterSave'], $this->conf['edit.']['userFunc_afterSave.'], array('rec' => $this->currentArr, 'origRec' => $origArr));
                         $this->saved = 1;
                     } else {
@@ -882,7 +917,8 @@ class user_feAdmin
             default:
                 if ($this->conf['create']) {
                     $newFieldList = implode(',', array_intersect(explode(',', $this->fieldList), GeneralUtility::trimExplode(',', $this->conf['create.']['fields'], 1)));
-                    $this->cObj->DBgetInsert($this->theTable, $this->thePid, $this->dataArr, $newFieldList, true);
+DebugUtility::debug($this->dataArr);
+                    $this->DBgetInsert($this->theTable, $this->thePid, $this->dataArr, $newFieldList, true);
                     $newId = $GLOBALS['TYPO3_DB']->sql_insert_id();
 
                     if ($this->theTable == 'fe_users' && $this->conf['fe_userOwnSelf']) {
@@ -901,16 +937,16 @@ class user_feAdmin
                             $extraList .= ','.$field;
                         }
                         if (count($dataArr)) {
-                            $this->cObj->DBgetUpdate($this->theTable, $newId, $dataArr, $extraList, true);
+                            $this->DBgetUpdate($this->theTable, $newId, $dataArr, $extraList, true);
                         }
                     }
 
-                    $this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $newId);
+                    $this->currentArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $newId);
                     $this->userProcess_alt($this->conf['create.']['userFunc_afterSave'], $this->conf['create.']['userFunc_afterSave.'], array('rec' => $this->currentArr));
 
                     // reloading the currentArr from the DB so that any DB changes in userFunc is taken into account
                     unset($this->currentArr);
-                    $this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $newId);
+                    $this->currentArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $newId);
 
                     $this->saved = 1;
                 }
@@ -930,18 +966,18 @@ class user_feAdmin
     public function deleteRecord()
     {
         if ($this->conf['delete']) {    // If deleting is enabled
-            $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $this->recUid);
-            if ($GLOBALS['TSFE']->loginUser || $this->aCAuth($origArr)) {
+            $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $this->recUid);
+            if ($this->getTypoScriptFrontendController()->loginUser || $this->aCAuth($origArr)) {
                 // Must be logged in OR be authenticated by the aC code in order to delete
                     // If the recUid selects a record.... (no check here)
                 if (is_array($origArr)) {
-                    if ($this->aCAuth($origArr) || $this->cObj->DBmayFEUserEdit($this->theTable, $origArr, $GLOBALS['TSFE']->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
+                    if ($this->aCAuth($origArr) || $this->DBmayFEUserEdit($this->theTable, $origArr, $this->getTypoScriptFrontendController()->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
                         // Display the form, if access granted.
                         if (!$GLOBALS['TCA'][$this->theTable]['ctrl']['delete']) {
                             // If the record is fully deleted... then remove the image (or any file) attached.
                             $this->deleteFilesFromRecord($this->recUid);
                         }
-                        $this->cObj->DBgetDelete($this->theTable, $this->recUid, true);
+                        $this->DBgetDelete($this->theTable, $this->recUid, true);
                         $this->currentArr = $origArr;
                         $this->saved = 1;
                     } else {
@@ -963,10 +999,8 @@ class user_feAdmin
     public function deleteFilesFromRecord($uid)
     {
         $table = $this->theTable;
-        $rec = $GLOBALS['TSFE']->sys_page->getRawRecord($table, $uid);
+        $rec = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($table, $uid);
 
-        $GLOBALS['TSFE']->includeTCA();
-        GeneralUtility::loadTCA($table);
         foreach ($GLOBALS['TCA'][$table]['columns'] as $field => $conf) {
             if ($conf['config']['type'] == 'group' && $conf['config']['internal_type'] == 'file') {
                 $GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($uid), array($field => ''));
@@ -999,12 +1033,12 @@ class user_feAdmin
     {
         if ($this->conf['delete']) {
             // If deleting is enabled
-            $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $this->recUid);
-            if ($GLOBALS['TSFE']->loginUser || $this->aCAuth($origArr)) {
+            $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $this->recUid);
+            if ($this->getTypoScriptFrontendController()->loginUser || $this->aCAuth($origArr)) {
                 // Must be logged in OR be authenticated by the aC code in order to delete
                 // If the recUid selects a record.... (no check here)
                 if (is_array($origArr)) {
-                    if ($this->aCAuth($origArr) || $this->cObj->DBmayFEUserEdit($this->theTable, $origArr, $GLOBALS['TSFE']->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
+                    if ($this->aCAuth($origArr) || $this->DBmayFEUserEdit($this->theTable, $origArr, $this->getTypoScriptFrontendController()->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
                         // Display the form, if access granted.
                         $this->markerArray['###HIDDENFIELDS###'] .= '<input type="hidden" name="rU" value="'.$this->recUid.'" />';
                         $content = $this->getPlainTemplate('###TEMPLATE_DELETE_PREVIEW###', $origArr);
@@ -1025,7 +1059,7 @@ class user_feAdmin
     }
 
     /**
-     * Returns a JavaScript <script> section with some function calls to JavaScript functions from "typo3/js/jsfunc.updateform.js" (which is also included by setting a reference in $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'])
+     * Returns a JavaScript <script> section with some function calls to JavaScript functions from "typo3/js/jsfunc.updateform.js" (which is also included by setting a reference in $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'])
      * The JavaScript codes simply transfers content into form fields of a form which is probably used for editing information by frontend users. Used by fe_adminLib.inc.
      *
      * @param array  $dataArray Data array which values to load into the form fields from $formName (only field names found in $fieldList)
@@ -1048,11 +1082,11 @@ class user_feAdmin
             if (is_array($value)) {
                 foreach ($value as $Nvalue) {
                     $JSPart .= '
-	updateForm(\''.$formName.'\',\''.$arrPrefix.'['.$fKey.'][]\','.GeneralUtility::quoteJSvalue($Nvalue, true).');';
+	updateForm(\''.$formName.'\',\''.$arrPrefix.'['.$fKey.'][]\','.GeneralUtility::quoteJSvalue($Nvalue).');';
                 }
             } else {
                 $JSPart .= '
-	updateForm(\''.$formName.'\',\''.$arrPrefix.'['.$fKey.']\','.GeneralUtility::quoteJSvalue($value, true).');';
+	updateForm(\''.$formName.'\',\''.$arrPrefix.'['.$fKey.']\','.GeneralUtility::quoteJSvalue($value).');';
             }
         }
         $JSPart = '<script type="text/javascript">
@@ -1060,7 +1094,7 @@ class user_feAdmin
 	/*]]>*/
 </script>
 ';
-        $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($GLOBALS['TSFE']->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
+        $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($this->getTypoScriptFrontendController()->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
 
         return $JSPart;
     }
@@ -1075,7 +1109,7 @@ class user_feAdmin
     public function displayCreateScreen()
     {
         if ($this->conf['create']) {
-            $templateCode = $this->cObj->getSubpart($this->templateCode, ((!$GLOBALS['TSFE']->loginUser || $this->conf['create.']['noSpecialLoginForm']) ? '###TEMPLATE_CREATE'.$this->previewLabel.'###' : '###TEMPLATE_CREATE_LOGIN'.$this->previewLabel.'###'));
+            $templateCode = $this->cObj->getSubpart($this->templateCode, ((!$this->getTypoScriptFrontendController()->loginUser || $this->conf['create.']['noSpecialLoginForm']) ? '###TEMPLATE_CREATE'.$this->previewLabel.'###' : '###TEMPLATE_CREATE_LOGIN'.$this->previewLabel.'###'));
             $failure = GeneralUtility::_GP('noWarnings') ? '' : $this->failure;
             if (!$failure) {
                 $templateCode = $this->cObj->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELDS_WARNING###', '');
@@ -1115,22 +1149,34 @@ class user_feAdmin
     public function displayEditScreen()
     {
         if ($this->conf['edit']) {    // If editing is enabled
-            $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $this->dataArr['uid'] ? $this->dataArr['uid'] : $this->recUid);
+            $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $this->dataArr['uid'] ? $this->dataArr['uid'] : $this->recUid);
 
-            if ($GLOBALS['TSFE']->loginUser || $this->aCAuth($origArr)) {    // Must be logged in OR be authenticated by the aC code in order to edit
+            if ($this->getTypoScriptFrontendController()->loginUser || $this->aCAuth($origArr)) {    // Must be logged in OR be authenticated by the aC code in order to edit
                     // If the recUid selects a record.... (no check here)
                 if (is_array($origArr)) {
-                    if ($this->aCAuth($origArr) || $this->cObj->DBmayFEUserEdit($this->theTable, $origArr, $GLOBALS['TSFE']->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
+                    if ($this->aCAuth($origArr) || $this->DBmayFEUserEdit($this->theTable, $origArr, $this->getTypoScriptFrontendController()->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf'])) {
                         // Display the form, if access granted.
                         $content = $this->displayEditForm($origArr);
                     } else {    // Else display error, that you could not edit that particular record...
                         $content = $this->getPlainTemplate('###TEMPLATE_NO_PERMISSIONS###');
                     }
-                } elseif ($GLOBALS['TSFE']->loginUser) {
+                } elseif ($this->getTypoScriptFrontendController()->loginUser) {
                     // If the recUid did not select a record, we display a menu of records. (eg. if no recUid)
                     $lockPid = $this->conf['edit.']['menuLockPid'] ? ' AND pid='.intval($this->thePid) : '';
 
-                    $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', $this->theTable, '1 '.$lockPid.$this->cObj->DBmayFEUserEditSelect($this->theTable, $GLOBALS['TSFE']->fe_user->user, $this->conf['allowedGroups'], $this->conf['fe_userEditSelf']).$GLOBALS['TSFE']->sys_page->deleteClause($this->theTable));
+                    $res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
+                        '*',
+                        $this->theTable,
+                        '1 ' .
+                            $lockPid.
+                            $this->DBmayFEUserEditSelect(
+                                $this->theTable,
+                                $this->getTypoScriptFrontendController()->fe_user->user,
+                                $this->conf['allowedGroups'],
+                                $this->conf['fe_userEditSelf']
+                            ) .
+                            $this->getTypoScriptFrontendController()->sys_page->deleteClause($this->theTable)
+                    );
 
                     if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {    // If there are menu-items ...
                         $templateCode = $this->getPlainTemplate('###TEMPLATE_EDITMENU###');
@@ -1206,7 +1252,10 @@ class user_feAdmin
     }
 
     /**
-     * Processes socalled "setfixed" commands. These are commands setting a certain field in a certain record to a certain value. Like a link you can click in an email which will unhide a record to enable something. Or likewise a link which can delete a record by a single click.
+     * Processes socalled "setfixed" commands.
+     * These are commands setting a certain field in a certain record to a certain value.
+     * Like a link you can click in an email which will unhide a record to enable something.
+     * Or likewise a link which can delete a record by a single click.
      * The idea is that only some allowed actions like this is allowed depending on the configured TypoScript.
      *
      * @return string HTML content displaying the status of the action
@@ -1215,7 +1264,7 @@ class user_feAdmin
     {
         if ($this->conf['setfixed']) {
             $theUid = intval($this->recUid);
-            $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $theUid);
+            $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
             $fD = GeneralUtility::_GP('fD');
             $sFK = GeneralUtility::_GP('sFK');
 
@@ -1237,13 +1286,13 @@ class user_feAdmin
                 $theCode = $this->setfixedHash($origArr, $origArr['_FIELDLIST']);
                 if (!strcmp($this->authCode, $theCode)) {
                     if ($sFK == 'DELETE') {
-                        $this->cObj->DBgetDelete($this->theTable, $theUid, true);
+                        $this->DBgetDelete($this->theTable, $theUid, true);
                     } else {
                         $newFieldList = implode(',', array_intersect(GeneralUtility::trimExplode(',', $this->fieldList), GeneralUtility::trimExplode(',', implode($fieldArr, ','), 1)));
                         unset($valuesConfiguredInTypoScript['_FIELDLIST']);
-                        $this->cObj->DBgetUpdate($this->theTable, $theUid, $valuesConfiguredInTypoScript, $newFieldList, true);
+                        $this->DBgetUpdate($this->theTable, $theUid, $valuesConfiguredInTypoScript, $newFieldList, true);
 
-                        $this->currentArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $theUid);
+                        $this->currentArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
                         $this->userProcess_alt($this->conf['setfixed.']['userFunc_afterSave'], $this->conf['setfixed.']['userFunc_afterSave.'], array('rec' => $this->currentArr, 'origRec' => $origArr));
                     }
 
@@ -1535,9 +1584,9 @@ class user_feAdmin
                 $fetchInt = MathUtility::canBeInterpretedAsInteger($fetch);
 
                 if ($fetchInt) {
-                    $DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable, 'uid', $fetch, $pidLock, '', '', '1');
+                    $DBrows = $this->getTypoScriptFrontendController()->sys_page->getRecordsByField($this->theTable, 'uid', $fetch, $pidLock, '', '', '1');
                 } elseif ($fetch) {    // $this->conf['email.']['field'] must be a valid field in the table!
-                    $DBrows = $GLOBALS['TSFE']->sys_page->getRecordsByField($this->theTable, $this->conf['email.']['field'], $fetch, $pidLock, '', '', '100');
+                    $DBrows = $this->getTypoScriptFrontendController()->sys_page->getRecordsByField($this->theTable, $this->conf['email.']['field'], $fetch, $pidLock, '', '', '100');
                 }
 
                     // Processing records
@@ -1560,7 +1609,8 @@ class user_feAdmin
     }
 
     /**
-     * Compiles and sends a mail based on input values + template parts. Looks for a normal and an "-admin" template and may send both kinds of emails. See documentation in TSref.
+     * Compiles and sends a mail based on input values + template parts.
+     * Looks for a normal and an "-admin" template and may send both kinds of emails. See documentation in TSref.
      *
      * @param   string  $key    A key which together with $this->emailMarkPrefix will identify the part from the template code to use for the email.
      * @param   array   $DBrows An array of records which fields are substituted in the templates
@@ -1601,7 +1651,7 @@ class user_feAdmin
 
         $recipientID = MathUtility::canBeInterpretedAsInteger($recipient);
         if ($recipientID) {
-            $fe_userRec = $GLOBALS['TSFE']->sys_page->getRawRecord('fe_users', $recipient);
+            $fe_userRec = $this->getTypoScriptFrontendController()->sys_page->getRawRecord('fe_users', $recipient);
             $recipient = $fe_userRec['email'];
         }
 
@@ -1623,7 +1673,7 @@ class user_feAdmin
 
     /**
      * Actually sends the requested mails (through $this->cObj->sendNotifyEmail or through $this->sendHTMLMail).
-     * As of TYPO3 v4.3 with autoloader, a check for $GLOBALS['TSFE']->config['config']['incT3Lib_htmlmail'] has been included for backwards compatibility.
+     * As of TYPO3 v4.3 with autoloader, a check for $this->getTypoScriptFrontendController()->config['config']['incT3Lib_htmlmail'] has been included for backwards compatibility.
      *
      * @param   string  $recipient  Recipient email address (or list)
      * @param   string  $content    Content for the regular email to user
@@ -1836,7 +1886,7 @@ class user_feAdmin
     {
         if ($this->conf['clearCacheOfPages']) {
             $cc_pidList = $GLOBALS['TYPO3_DB']->cleanIntList($this->conf['clearCacheOfPages']);
-            $GLOBALS['TSFE']->clearPageCacheContent_pidList($cc_pidList);
+            $this->getTypoScriptFrontendController()->clearPageCacheContent_pidList($cc_pidList);
         }
     }
 
@@ -1893,7 +1943,273 @@ class user_feAdmin
      */
     protected function getTimeTracker()
     {
-        return $GLOBALS['TT'];
+        return GeneralUtility::makeInstance(TimeTracker::class);
+    }
+
+    /***********************************************
+     *
+     * Database functions, making of queries
+     *
+     ***********************************************/
+    /**
+     * Returns an UPDATE/DELETE sql query which will "delete" the record.
+     * If the $GLOBALS['TCA'] config for the table tells us to NOT "physically" delete the record but rather set the "deleted" field to "1" then an UPDATE query is returned doing just that. Otherwise it truely is a DELETE query.
+     *
+     * @param string $table The table name, should be in $GLOBALS['TCA']
+     * @param int $uid The UID of the record from $table which we are going to delete
+     * @param bool $doExec If set, the query is executed. IT'S HIGHLY RECOMMENDED TO USE THIS FLAG to execute the query directly!!!
+     * @return string The query, ready to execute unless $doExec was TRUE in which case the return value is FALSE.
+     * @see DBgetUpdate(), DBgetInsert(), user_feAdmin
+     */
+    public function DBgetDelete($table, $uid, $doExec = false)
+    {
+        $uid = (int)$uid;
+        if (!$uid) {
+            return '';
+        }
+        $db = $this->getDatabaseConnection();
+        if ($GLOBALS['TCA'][$table]['ctrl']['delete']) {
+            $updateFields = [];
+            $updateFields[$GLOBALS['TCA'][$table]['ctrl']['delete']] = 1;
+            if ($GLOBALS['TCA'][$table]['ctrl']['tstamp']) {
+                $updateFields[$GLOBALS['TCA'][$table]['ctrl']['tstamp']] = $GLOBALS['EXEC_TIME'];
+            }
+            if ($doExec) {
+                return $db->exec_UPDATEquery($table, 'uid=' . $uid, $updateFields);
+            } else {
+                return $db->UPDATEquery($table, 'uid=' . $uid, $updateFields);
+            }
+        } elseif ($doExec) {
+            return $db->exec_DELETEquery($table, 'uid=' . $uid);
+        } else {
+            return $db->DELETEquery($table, 'uid=' . $uid);
+        }
+    }
+
+    /**
+     * Returns an UPDATE sql query.
+     * If a "tstamp" field is configured for the $table tablename in $GLOBALS['TCA'] then that field is automatically updated to the current time.
+     * Notice: It is YOUR responsibility to make sure the data being updated is valid according the tablefield types etc. Also no logging is performed of the update. It's just a nice general usage API function for creating a quick query.
+     * NOTICE: From TYPO3 3.6.0 this function ALWAYS adds slashes to values inserted in the query.
+     *
+     * @param string $table The table name, should be in $GLOBALS['TCA']
+     * @param int $uid The UID of the record from $table which we are going to update
+     * @param array $dataArr The data array where key/value pairs are fieldnames/values for the record to update.
+     * @param string $fieldList Comma list of fieldnames which are allowed to be updated. Only values from the data record for fields in this list will be updated!!
+     * @param bool $doExec If set, the query is executed. IT'S HIGHLY RECOMMENDED TO USE THIS FLAG to execute the query directly!!!
+     * @return string The query, ready to execute unless $doExec was TRUE in which case the return value is FALSE.
+     * @see DBgetInsert(), DBgetDelete(), user_feAdmin
+     */
+    public function DBgetUpdate($table, $uid, $dataArr, $fieldList, $doExec = false)
+    {
+        // uid can never be set
+        unset($dataArr['uid']);
+        $uid = (int)$uid;
+        if ($uid) {
+            $fieldList = implode(',', GeneralUtility::trimExplode(',', $fieldList, true));
+            $updateFields = [];
+            foreach ($dataArr as $f => $v) {
+                if (GeneralUtility::inList($fieldList, $f)) {
+                    $updateFields[$f] = $v;
+                }
+            }
+            if ($GLOBALS['TCA'][$table]['ctrl']['tstamp']) {
+                $updateFields[$GLOBALS['TCA'][$table]['ctrl']['tstamp']] = $GLOBALS['EXEC_TIME'];
+            }
+            if (!empty($updateFields)) {
+                if ($doExec) {
+                    return $this->getDatabaseConnection()->exec_UPDATEquery($table, 'uid=' . $uid, $updateFields);
+                }
+                return $this->getDatabaseConnection()->UPDATEquery($table, 'uid=' . $uid, $updateFields);
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Returns an INSERT sql query which automatically added "system-fields" according to $GLOBALS['TCA']
+     * Automatically fields for "tstamp", "crdate", "cruser_id", "fe_cruser_id" and "fe_crgroup_id" is updated if they are configured in the "ctrl" part of $GLOBALS['TCA'].
+     * The "pid" field is overridden by the input $pid value if >= 0 (zero). "uid" can never be set as a field
+     * NOTICE: From TYPO3 3.6.0 this function ALWAYS adds slashes to values inserted in the query.
+     *
+     * @param string $table The table name, should be in $GLOBALS['TCA']
+     * @param int $pid The PID value for the record to insert
+     * @param array $dataArr The data array where key/value pairs are fieldnames/values for the record to insert
+     * @param string $fieldList Comma list of fieldnames which are allowed to be inserted. Only values from the data record for fields in this list will be inserted!!
+     * @param bool $doExec If set, the query is executed. IT'S HIGHLY RECOMMENDED TO USE THIS FLAG to execute the query directly!!!
+     * @return string The query, ready to execute unless $doExec was TRUE in which case the return value is FALSE.
+     * @see DBgetUpdate(), DBgetDelete(), user_feAdmin
+     */
+    public function DBgetInsert($table, $pid, $dataArr, $fieldList, $doExec = false)
+    {
+        $extraList = 'pid';
+        if ($GLOBALS['TCA'][$table]['ctrl']['tstamp']) {
+            $field = $GLOBALS['TCA'][$table]['ctrl']['tstamp'];
+            $dataArr[$field] = $GLOBALS['EXEC_TIME'];
+            $extraList .= ',' . $field;
+        }
+        if ($GLOBALS['TCA'][$table]['ctrl']['crdate']) {
+            $field = $GLOBALS['TCA'][$table]['ctrl']['crdate'];
+            $dataArr[$field] = $GLOBALS['EXEC_TIME'];
+            $extraList .= ',' . $field;
+        }
+        if ($GLOBALS['TCA'][$table]['ctrl']['cruser_id']) {
+            $field = $GLOBALS['TCA'][$table]['ctrl']['cruser_id'];
+            $dataArr[$field] = 0;
+            $extraList .= ',' . $field;
+        }
+        if ($GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id']) {
+            $field = $GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id'];
+            $dataArr[$field] = (int)$this->getTypoScriptFrontendController()->fe_user->user['uid'];
+            $extraList .= ',' . $field;
+        }
+        if ($GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id']) {
+            $field = $GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id'];
+            list($dataArr[$field]) = explode(',', $this->getTypoScriptFrontendController()->fe_user->user['usergroup']);
+            $dataArr[$field] = (int)$dataArr[$field];
+            $extraList .= ',' . $field;
+        }
+        // Uid can never be set
+        unset($dataArr['uid']);
+        if ($pid >= 0) {
+            $dataArr['pid'] = $pid;
+        }
+        // Set pid < 0 and the dataarr-pid will be used!
+        $fieldList = implode(',', GeneralUtility::trimExplode(',', $fieldList . ',' . $extraList, true));
+        $insertFields = [];
+        foreach ($dataArr as $f => $v) {
+            if (GeneralUtility::inList($fieldList, $f)) {
+                $insertFields[$f] = $v;
+            }
+        }
+        if ($doExec) {
+            return $this->getDatabaseConnection()->exec_INSERTquery($table, $insertFields);
+        } else {
+            return $this->getDatabaseConnection()->INSERTquery($table, $insertFields);
+        }
+    }
+
+    /**
+     * Checks if a frontend user is allowed to edit a certain record
+     *
+     * @param string $table The table name, found in $GLOBALS['TCA']
+     * @param array $row The record data array for the record in question
+     * @param array $feUserRow The array of the fe_user which is evaluated, typ. $this->getTypoScriptFrontendController()->fe_user->user
+     * @param string $allowedGroups Commalist of the only fe_groups uids which may edit the record. If not set, then the usergroup field of the fe_user is used.
+     * @param bool|int $feEditSelf TRUE, if the fe_user may edit his own fe_user record.
+     * @return bool
+     * @see user_feAdmin
+     */
+    public function DBmayFEUserEdit($table, $row, $feUserRow, $allowedGroups = '', $feEditSelf = 0)
+    {
+        if ($allowedGroups) {
+            $groupList = implode(
+                ',',
+                array_intersect(
+                    GeneralUtility::trimExplode(',', $feUserRow['usergroup'], true),
+                    GeneralUtility::trimExplode(',', $allowedGroups, true)
+                )
+            );
+        } else {
+            $groupList = $feUserRow['usergroup'];
+        }
+        $ok = 0;
+        // Points to the field that allows further editing from frontend if not set. If set the record is locked.
+        if (!$GLOBALS['TCA'][$table]['ctrl']['fe_admin_lock'] || !$row[$GLOBALS['TCA'][$table]['ctrl']['fe_admin_lock']]) {
+            // Points to the field (int) that holds the fe_users-id of the creator fe_user
+            if ($GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id']) {
+                $rowFEUser = (int)$row[$GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id']];
+                if ($rowFEUser && $rowFEUser === (int)$feUserRow['uid']) {
+                    $ok = 1;
+                }
+            }
+            // If $feEditSelf is set, fe_users may always edit them selves...
+            if ($feEditSelf && $table === 'fe_users' && (int)$feUserRow['uid'] === (int)$row['uid']) {
+                $ok = 1;
+            }
+            // Points to the field (int) that holds the fe_group-id of the creator fe_user's first group
+            if ($GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id']) {
+                $rowFEUser = (int)$row[$GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id']];
+                if ($rowFEUser) {
+                    if (GeneralUtility::inList($groupList, $rowFEUser)) {
+                        $ok = 1;
+                    }
+                }
+            }
+        }
+        return $ok;
+    }
+
+    /**
+     * Returns part of a where clause for selecting records from the input table name which the user may edit.
+     * Conceptually close to the function DBmayFEUserEdit(); It does the same thing but not for a single record,
+     * rather for a select query selecting all records which the user HAS access to.
+     *
+     * @param string $table The table name
+     * @param array $feUserRow The array of the fe_user which is evaluated, typ. $this->getTypoScriptFrontendController()->fe_user->user
+     * @param string $allowedGroups Commalist of the only fe_groups uids which may edit the record. If not set, then the usergroup field of the fe_user is used.
+     * @param bool|int $feEditSelf TRUE, if the fe_user may edit his own fe_user record.
+     * @return string The where clause part. ALWAYS returns a string. If no access at all, then " AND 1=0
+     * @see DBmayFEUserEdit(), user_feAdmin::displayEditScreen()
+     */
+    public function DBmayFEUserEditSelect($table, $feUserRow, $allowedGroups = '', $feEditSelf = 0)
+    {
+        // Returns where-definition that selects user-editable records.
+        if ($allowedGroups) {
+            $groupList = implode(
+                ',',
+                array_intersect(
+                    GeneralUtility::trimExplode(',', $feUserRow['usergroup'], true),
+                    GeneralUtility::trimExplode(',', $allowedGroups, true)
+                )
+            );
+        } else {
+            $groupList = $feUserRow['usergroup'];
+        }
+        $OR_arr = [];
+        // Points to the field (int) that holds the fe_users-id of the creator fe_user
+        if ($GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id']) {
+            $OR_arr[] = $GLOBALS['TCA'][$table]['ctrl']['fe_cruser_id'] . '=' . $feUserRow['uid'];
+        }
+        // Points to the field (int) that holds the fe_group-id of the creator fe_user's first group
+        if ($GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id']) {
+            $values = GeneralUtility::intExplode(',', $groupList);
+            foreach ($values as $theGroupUid) {
+                if ($theGroupUid) {
+                    $OR_arr[] = $GLOBALS['TCA'][$table]['ctrl']['fe_crgroup_id'] . '=' . $theGroupUid;
+                }
+            }
+        }
+        // If $feEditSelf is set, fe_users may always edit them selves...
+        if ($feEditSelf && $table === 'fe_users') {
+            $OR_arr[] = 'uid=' . (int)$feUserRow['uid'];
+        }
+        $whereDef = ' AND 1=0';
+        if (!empty($OR_arr)) {
+            $whereDef = ' AND (' . implode(' OR ', $OR_arr) . ')';
+            if ($GLOBALS['TCA'][$table]['ctrl']['fe_admin_lock']) {
+                $whereDef .= ' AND ' . $GLOBALS['TCA'][$table]['ctrl']['fe_admin_lock'] . '=0';
+            }
+        }
+        return $whereDef;
+    }
+
+    /**
+     * Returns the database connection
+     *
+     * @return \TYPO3\CMS\Core\Database\DatabaseConnection
+     */
+    protected function getDatabaseConnection()
+    {
+        return $GLOBALS['TYPO3_DB'];
+    }
+
+    /**
+     * @return \TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController
+     */
+    protected function getTypoScriptFrontendController()
+    {
+        return $GLOBALS['TSFE'];
     }
 }
 
