@@ -1,5 +1,10 @@
 # Direct Mail Subscription
 
+Fork of direct_mail_subscription for TYPO3 9.5 LTS support.
+You need to install typo3db_legacy Extension. Also you need to refresh the content elements of direct_mail_subscription.
+
+--
+
 This is a simple subscription formular for the [TYPO3 CMS](http://typo3.org).
 
 This extension depends on following extension:
