@@ -26,9 +26,3 @@ $tempColumns = array(
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile($_EXTKEY, 'static/', 'Direct Mail subscription');
 
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPlugin(
-    array(
-        'LLL:EXT:direct_mail_subscription/locallang_db.xlf:pi_dmail_subscr',
-        '21'
-    )
-);

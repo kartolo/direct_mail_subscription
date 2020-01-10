@@ -32,6 +32,7 @@ use TYPO3\CMS\Core\Utility\DebugUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Core\Service\MarkerBasedTemplateService;
 
 /**
  * FE admin lib.
@@ -148,6 +149,8 @@ class user_feAdmin
     public function init($content, $conf)
     {
         $this->conf = $conf;
+
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
 
             // template file is fetched.
         $this->templateCode = $this->conf['templateContent'] ?
@@ -345,9 +348,9 @@ class user_feAdmin
                     $key = 'CREATE';
             }
                 // Output message
-            $templateCode = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_'.$key.'_SAVED###');
+            $templateCode = $templateService->getSubpart($this->templateCode, '###TEMPLATE_'.$key.'_SAVED###');
             $this->setCObjects($templateCode, $this->currentArr);
-            $markerArray = $this->cObj->fillInMarkerArray(
+            $markerArray = $templateService->fillInMarkerArray(
                 $this->markerArray,
                 $this->currentArr,
                 '',
@@ -355,7 +358,7 @@ class user_feAdmin
                 'FIELD_',
                 $this->recInMarkersHSC
             );
-            $content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
+            $content = $templateService->substituteMarkerArray($templateCode, $markerArray);
 
                 // email message:
             $this->compileMail(
@@ -366,9 +369,9 @@ class user_feAdmin
             );
         } elseif ($this->error) {
             // If there was an error, we return the template-subpart with the error message
-            $templateCode = $this->cObj->getSubpart($this->templateCode, $this->error);
+            $templateCode = $templateService->getSubpart($this->templateCode, $this->error);
             $this->setCObjects($templateCode);
-            $content = $this->cObj->substituteMarkerArray($templateCode, $this->markerArray);
+            $content = $templateService->substituteMarkerArray($templateCode, $this->markerArray);
         } else {
             // Finally, if there has been no attempt to save. That is either preview or just displaying and empty or not correctly filled form:
             if (!$this->cmd) {
@@ -917,7 +920,7 @@ class user_feAdmin
             default:
                 if ($this->conf['create']) {
                     $newFieldList = implode(',', array_intersect(explode(',', $this->fieldList), GeneralUtility::trimExplode(',', $this->conf['create.']['fields'], 1)));
-DebugUtility::debug($this->dataArr);
+
                     $this->DBgetInsert($this->theTable, $this->thePid, $this->dataArr, $newFieldList, true);
                     $newId = $GLOBALS['TYPO3_DB']->sql_insert_id();
 
@@ -1094,7 +1097,7 @@ DebugUtility::debug($this->dataArr);
 	/*]]>*/
 </script>
 ';
-        $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($this->getTypoScriptFrontendController()->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
+        $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($this->getTypoScriptFrontendController()->absRefPrefix. ExtensionManagementUtility::extPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
 
         return $JSPart;
     }
@@ -1109,10 +1112,12 @@ DebugUtility::debug($this->dataArr);
     public function displayCreateScreen()
     {
         if ($this->conf['create']) {
-            $templateCode = $this->cObj->getSubpart($this->templateCode, ((!$this->getTypoScriptFrontendController()->loginUser || $this->conf['create.']['noSpecialLoginForm']) ? '###TEMPLATE_CREATE'.$this->previewLabel.'###' : '###TEMPLATE_CREATE_LOGIN'.$this->previewLabel.'###'));
+            $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
+
+            $templateCode = $templateService->getSubpart($this->templateCode, ((!$this->getTypoScriptFrontendController()->loginUser || $this->conf['create.']['noSpecialLoginForm']) ? '###TEMPLATE_CREATE'.$this->previewLabel.'###' : '###TEMPLATE_CREATE_LOGIN'.$this->previewLabel.'###'));
             $failure = GeneralUtility::_GP('noWarnings') ? '' : $this->failure;
             if (!$failure) {
-                $templateCode = $this->cObj->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELDS_WARNING###', '');
+                $templateCode = $templateService->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELDS_WARNING###', '');
             }
 
             $templateCode = $this->removeRequired($templateCode, $failure);
@@ -1122,7 +1127,7 @@ DebugUtility::debug($this->dataArr);
                 $this->dataArr = array();
             }
 
-            $markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $this->dataArr, '', true, 'FIELD_', $this->recInMarkersHSC);
+            $markerArray = $templateService->fillInMarkerArray($this->markerArray, $this->dataArr, '', true, 'FIELD_', $this->recInMarkersHSC);
             if ($this->conf['create.']['preview'] && !$this->previewLabel) {
                 $markerArray['###HIDDENFIELDS###'] .= '<input type="hidden" name="preview" value="1" />';
             }
@@ -1132,7 +1137,7 @@ DebugUtility::debug($this->dataArr);
                 $markerArray['###CAPTCHA###'] = $this->getCaptcha();
             }
 
-            $content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
+            $content = $templateService->substituteMarkerArray($templateCode, $markerArray);
             $content .= $this->getUpdateJS($this->modifyDataArrForFormUpdate($this->dataArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
         }
 
@@ -1181,13 +1186,13 @@ DebugUtility::debug($this->dataArr);
                     if ($GLOBALS['TYPO3_DB']->sql_num_rows($res)) {    // If there are menu-items ...
                         $templateCode = $this->getPlainTemplate('###TEMPLATE_EDITMENU###');
                         $out = '';
-                        $itemCode = $this->cObj->getSubpart($templateCode, '###ITEM###');
+                        $itemCode = $templateService->getSubpart($templateCode, '###ITEM###');
                         while ($menuRow = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-                            $markerArray = $this->cObj->fillInMarkerArray(array(), $menuRow, '', true, 'FIELD_', $this->recInMarkersHSC);
+                            $markerArray = $templateService->fillInMarkerArray(array(), $menuRow, '', true, 'FIELD_', $this->recInMarkersHSC);
                             $markerArray = $this->setCObjects($itemCode, $menuRow, $markerArray, 'ITEM_');
-                            $out .= $this->cObj->substituteMarkerArray($itemCode, $markerArray);
+                            $out .= $templateService->substituteMarkerArray($itemCode, $markerArray);
                         }
-                        $content = $this->cObj->substituteSubpart($templateCode, '###ALLITEMS###', $out);
+                        $content = $templateService->substituteSubpart($templateCode, '###ALLITEMS###', $out);
                     } else {    // If there are not menu items....
                         $content = $this->getPlainTemplate('###TEMPLATE_EDITMENU_NOITEMS###');
                     }
@@ -1217,23 +1222,24 @@ DebugUtility::debug($this->dataArr);
      */
     public function displayEditForm($origArr)
     {
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         $currentArr = is_array($this->dataArr) ? $this->dataArr + $origArr : $origArr;
 
         if ($this->conf['debug']) {
             debug('displayEditForm(): '.'###TEMPLATE_EDIT'.$this->previewLabel.'###', 1);
         }
-        $templateCode = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_EDIT'.$this->previewLabel.'###');
+        $templateCode = $templateService->getSubpart($this->templateCode, '###TEMPLATE_EDIT'.$this->previewLabel.'###');
         $failure = GeneralUtility::_GP('noWarnings') ? '' : $this->failure;
 
         if (!$failure) {
-            $templateCode = $this->cObj->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELDS_WARNING###', '');
+            $templateCode = $templateService->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELDS_WARNING###', '');
         }
 
         $templateCode = $this->removeRequired($templateCode, $failure);
 
         $this->setCObjects($templateCode, $currentArr);
 
-        $markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $currentArr, '', true, 'FIELD_', $this->recInMarkersHSC);
+        $markerArray = $templateService->fillInMarkerArray($this->markerArray, $currentArr, '', true, 'FIELD_', $this->recInMarkersHSC);
 
         $markerArray['###HIDDENFIELDS###'] .= '<input type="hidden" name="FE['.$this->theTable.'][uid]" value="'.$currentArr['uid'].'" />';
         if ($this->conf['edit.']['preview'] && !$this->previewLabel) {
@@ -1245,7 +1251,7 @@ DebugUtility::debug($this->dataArr);
             $markerArray['###CAPTCHA###'] = $this->getCaptcha();
         }
 
-        $content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
+        $content = $templateService->substituteMarkerArray($templateCode, $markerArray);
         $content .= $this->getUpdateJS($this->modifyDataArrForFormUpdate($currentArr), $this->theTable.'_form', 'FE['.$this->theTable.']', $this->fieldList.$this->additionalUpdateFields);
 
         return $content;
@@ -1262,6 +1268,7 @@ DebugUtility::debug($this->dataArr);
      */
     public function procesSetFixed()
     {
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         if ($this->conf['setfixed']) {
             $theUid = intval($this->recUid);
             $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
@@ -1297,7 +1304,7 @@ DebugUtility::debug($this->dataArr);
                     }
 
                         // Outputting template
-                    $this->markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $origArr, '', true, 'FIELD_', $this->recInMarkersHSC);
+                    $this->markerArray = $templateService->fillInMarkerArray($this->markerArray, $origArr, '', true, 'FIELD_', $this->recInMarkersHSC);
                     $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_OK_'.$sFK.'###');
                     if (!$content) {
                         $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_OK###');
@@ -1345,9 +1352,10 @@ DebugUtility::debug($this->dataArr);
      */
     public function removeRequired($templateCode, $failure)
     {
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         foreach ($this->requiredArr as $theField) {
             if (!GeneralUtility::inList($failure, $theField)) {
-                $templateCode = $this->cObj->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELD_'.$theField.'###', '');
+                $templateCode = $templateService->substituteSubpart($templateCode, '###SUB_REQUIRED_FIELD_'.$theField.'###', '');
             }
         }
 
@@ -1367,10 +1375,11 @@ DebugUtility::debug($this->dataArr);
      */
     public function getPlainTemplate($key, $r = array())
     {
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         if ($this->conf['debug']) {
             debug('getPlainTemplate(): '.$key, 1);
         }
-        $templateCode = $this->cObj->getSubpart($this->templateCode, $key);
+        $templateCode = $templateService->getSubpart($this->templateCode, $key);
         $this->setCObjects($templateCode, is_array($r) ? $r : array());
 
         /* CAPTCHA */
@@ -1378,9 +1387,9 @@ DebugUtility::debug($this->dataArr);
             $this->markerArray['###CAPTCHA###'] = $this->getCaptcha();
         }
 
-        $markerArray = is_array($r) ? $this->cObj->fillInMarkerArray($this->markerArray, $r, '', true, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray;
+        $markerArray = is_array($r) ? $templateService->fillInMarkerArray($this->markerArray, $r, '', true, 'FIELD_', $this->recInMarkersHSC) : $this->markerArray;
 
-        $content = $this->cObj->substituteMarkerArray($templateCode, $markerArray);
+        $content = $templateService->substituteMarkerArray($templateCode, $markerArray);
 
         return $content;
     }
@@ -1511,16 +1520,16 @@ DebugUtility::debug($this->dataArr);
     public function getCaptcha($errorMsg = '')
     {
         if (ExtensionManagementUtility::isLoaded('captcha')) {
-            $templateCodeCaptcha = $this->cObj->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
+            $templateCodeCaptcha = $templateService->getSubpart($this->templateCode, '###TEMPLATE_CAPTCHA###');
             $markerArrayCaptcha['###CAPTCHA_IMG###'] = '<img src="/' . ExtensionManagementUtility::siteRelPath('captcha').'captcha/captcha.php" alt="" />';
 
             if (!empty($errorMsg)) {
                 $markerArrayCaptcha['###EVAL_ERROR_FIELD_captcha###'] = $errorMsg;
             } else {
-                $templateCodeCaptcha = $this->cObj->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
+                $templateCodeCaptcha = $templateService->substituteSubpart($templateCodeCaptcha, '###SUB_REQUIRED_FIELD_captcha###', '');
             }
 
-            $captcha = $this->cObj->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
+            $captcha = $templateService->substituteMarkerArray($templateCodeCaptcha, $markerArrayCaptcha);
         } else {
             $captcha = '';
         }
@@ -1619,34 +1628,35 @@ DebugUtility::debug($this->dataArr);
      */
     public function compileMail($key, $DBrows, $recipient, $setFixedConfig = array())
     {
+        $templateService = GeneralUtility::makeInstance(MarkerBasedTemplateService::class);
         $this->getTimeTracker()->push('compileMail');
         $mailContent = '';
         $key = $this->emailMarkPrefix.$key;
 
-        $userContent['all'] = trim($this->cObj->getSubpart($this->templateCode, '###'.$key.'###'));
-        $adminContent['all'] = trim($this->cObj->getSubpart($this->templateCode, '###'.$key.'-ADMIN###'));
-        $userContent['rec'] = $this->cObj->getSubpart($userContent['all'], '###SUB_RECORD###');
-        $adminContent['rec'] = $this->cObj->getSubpart($adminContent['all'], '###SUB_RECORD###');
+        $userContent['all'] = trim($templateService->getSubpart($this->templateCode, '###'.$key.'###'));
+        $adminContent['all'] = trim($templateService->getSubpart($this->templateCode, '###'.$key.'-ADMIN###'));
+        $userContent['rec'] = $templateService->getSubpart($userContent['all'], '###SUB_RECORD###');
+        $adminContent['rec'] = $templateService->getSubpart($adminContent['all'], '###SUB_RECORD###');
 
         foreach ($DBrows as $r) {
-            $markerArray = $this->cObj->fillInMarkerArray($this->markerArray, $r, '', 0);
+            $markerArray = $templateService->fillInMarkerArray($this->markerArray, $r, '', 0);
             $markerArray = $this->setCObjects($userContent['rec'].$adminContent['rec'], $r, $markerArray, 'ITEM_');
             $markerArray['###SYS_AUTHCODE###'] = $this->authCode($r);
             $markerArray = $this->setfixed($markerArray, $setFixedConfig, $r);
 
             if ($userContent['rec']) {
-                $userContent['accum'] .= $this->cObj->substituteMarkerArray($userContent['rec'], $markerArray);
+                $userContent['accum'] .= $templateService->substituteMarkerArray($userContent['rec'], $markerArray);
             }
             if ($adminContent['rec']) {
-                $adminContent['accum'] .= $this->cObj->substituteMarkerArray($adminContent['rec'], $markerArray);
+                $adminContent['accum'] .= $templateService->substituteMarkerArray($adminContent['rec'], $markerArray);
             }
         }
 
         if ($userContent['all']) {
-            $userContent['final'] .= $this->cObj->substituteSubpart($userContent['all'], '###SUB_RECORD###', $userContent['accum']);
+            $userContent['final'] .= $templateService->substituteSubpart($userContent['all'], '###SUB_RECORD###', $userContent['accum']);
         }
         if ($adminContent['all']) {
-            $adminContent['final'] .= $this->cObj->substituteSubpart($adminContent['all'], '###SUB_RECORD###', $adminContent['accum']);
+            $adminContent['final'] .= $templateService->substituteSubpart($adminContent['all'], '###SUB_RECORD###', $adminContent['accum']);
         }
 
         $recipientID = MathUtility::canBeInterpretedAsInteger($recipient);
