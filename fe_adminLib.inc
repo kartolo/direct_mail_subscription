@@ -1219,6 +1219,7 @@ class user_feAdmin
         if ($this->conf['setfixed']) {
             $theUid = intval($this->recUid);
             $origArr = $GLOBALS['TSFE']->sys_page->getRawRecord($this->theTable, $theUid);
+            $origHidden = $origArr['hidden'];
             $fD = GeneralUtility::_GP('fD');
             $sFK = GeneralUtility::_GP('sFK');
 
@@ -1257,13 +1258,17 @@ class user_feAdmin
                         $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_OK###');
                     }
 
+                    // Send confirmation mail only, if user record is still hidden.
+                    if ($origHidden == 1) {
                         // Compiling email
-                    $this->compileMail(
-                        'SETFIXED_'.$sFK,
-                        array($origArr),
-                        $origArr[$this->conf['email.']['field']],
-                        $this->conf['setfixed.']
-                    );
+                        $this->compileMail(
+                            'SETFIXED_' . $sFK,
+                            array($origArr),
+                            $origArr[$this->conf['email.']['field']],
+                            $this->conf['setfixed.']
+                        );
+                    }
+
                         // Clearing cache if set:
                     $this->clearCacheIfSet();
                     $this->setNoCacheHeader();
