@@ -784,11 +784,14 @@ class user_feAdmin
         $captcha = true;
 
         if (ExtensionManagementUtility::isLoaded('captcha') && isset($this->dataArr['captcha'])) {
-            session_start();
-            $captchaStr = $_SESSION['tx_captcha_string'];
-            $_SESSION['tx_captcha_string'] = '';
-
-            if (empty($captchaStr) || ($this->dataArr['captcha'] !== $captchaStr)) {
+            if (\TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(ExtensionManagementUtility::getExtensionVersion('captcha')) >= 2000000) {
+                $result = \ThinkopenAt\Captcha\Utility::checkCaptcha($this->dataArr['captcha']);
+            } else {
+                session_start();
+                $result = !empty($_SESSION['tx_captcha_string']) && ($this->dataArr['captcha'] === $_SESSION['tx_captcha_string']);
+                $_SESSION['tx_captcha_string'] = '';
+            }
+            if (!$result) {
                 $captcha = false;
                 $theField = 'captcha';
                 $this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
@@ -1060,7 +1063,7 @@ class user_feAdmin
 	/*]]>*/
 </script>
 ';
-        $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($GLOBALS['TSFE']->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
+        $GLOBALS['TSFE']->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($GLOBALS['TSFE']->absRefPrefix. ExtensionManagementUtility::siteRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
 
         return $JSPart;
     }
