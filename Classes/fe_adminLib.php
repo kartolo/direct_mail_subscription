@@ -818,11 +818,14 @@ class user_feAdmin
         $captcha = true;
 
         if (ExtensionManagementUtility::isLoaded('captcha') && isset($this->dataArr['captcha'])) {
-            session_start();
-            $captchaStr = $_SESSION['tx_captcha_string'];
-            $_SESSION['tx_captcha_string'] = '';
-
-            if (empty($captchaStr) || ($this->dataArr['captcha'] !== $captchaStr)) {
+            if (\TYPO3\CMS\Core\Utility\VersionNumberUtility::convertVersionNumberToInteger(ExtensionManagementUtility::getExtensionVersion('captcha')) >= 2000000) {
+                $result = \ThinkopenAt\Captcha\Utility::checkCaptcha($this->dataArr['captcha']);
+            } else {
+                session_start();
+                $result = !empty($_SESSION['tx_captcha_string']) && ($this->dataArr['captcha'] === $_SESSION['tx_captcha_string']);
+                $_SESSION['tx_captcha_string'] = '';
+            }
+            if (!$result) {
                 $captcha = false;
                 $theField = 'captcha';
                 $this->failureMsg[$theField][] = $this->getFailure($theField, 'captcha', 'Wrong captcha!');
@@ -917,7 +920,7 @@ class user_feAdmin
             default:
                 if ($this->conf['create']) {
                     $newFieldList = implode(',', array_intersect(explode(',', $this->fieldList), GeneralUtility::trimExplode(',', $this->conf['create.']['fields'], 1)));
-DebugUtility::debug($this->dataArr);
+
                     $this->DBgetInsert($this->theTable, $this->thePid, $this->dataArr, $newFieldList, true);
                     $newId = $GLOBALS['TYPO3_DB']->sql_insert_id();
 
@@ -1094,7 +1097,7 @@ DebugUtility::debug($this->dataArr);
 	/*]]>*/
 </script>
 ';
-        $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($this->getTypoScriptFrontendController()->absRefPrefix. ExtensionManagementUtility::extRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
+        $this->getTypoScriptFrontendController()->additionalHeaderData['JSincludeFormupdate'] = '<script type="text/javascript" src="'.GeneralUtility::createVersionNumberedFilename($this->getTypoScriptFrontendController()->absRefPrefix. ExtensionManagementUtility::siteRelPath('direct_mail_subscription').'jsfunc.updateform.js').'"></script>';
 
         return $JSPart;
     }
@@ -1265,6 +1268,7 @@ DebugUtility::debug($this->dataArr);
         if ($this->conf['setfixed']) {
             $theUid = intval($this->recUid);
             $origArr = $this->getTypoScriptFrontendController()->sys_page->getRawRecord($this->theTable, $theUid);
+            $origHidden = $origArr['hidden'];
             $fD = GeneralUtility::_GP('fD');
             $sFK = GeneralUtility::_GP('sFK');
 
@@ -1303,13 +1307,17 @@ DebugUtility::debug($this->dataArr);
                         $content = $this->getPlainTemplate('###TEMPLATE_SETFIXED_OK###');
                     }
 
+                    // Send confirmation mail only, if user record is still hidden.
+                    if ($origHidden == 1) {
                         // Compiling email
-                    $this->compileMail(
-                        'SETFIXED_'.$sFK,
-                        array($origArr),
-                        $origArr[$this->conf['email.']['field']],
-                        $this->conf['setfixed.']
-                    );
+                        $this->compileMail(
+                            'SETFIXED_' . $sFK,
+                            array($origArr),
+                            $origArr[$this->conf['email.']['field']],
+                            $this->conf['setfixed.']
+                        );
+                    }
+
                         // Clearing cache if set:
                     $this->clearCacheIfSet();
                     $this->setNoCacheHeader();
